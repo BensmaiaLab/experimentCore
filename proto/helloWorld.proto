@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+option java_package = "ex.grpc";
+
+package helloRPC;
+
+// Defines the service
+service helloRPC {
+    // Function invoked to send the request
+    rpc sendRequest (helloRequest) returns (helloReply) {}
+}
+
+// The request message containing requested numbers
+message helloRequest {
+    string name = 1;
+}
+
+// The response message containing response
+message helloReply {
+    int32 reply = 1;
+}
