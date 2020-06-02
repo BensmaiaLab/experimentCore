@@ -11,9 +11,8 @@ to limit dependencies and mark them explicitly where they're used.
 
 I'm still figuring out whether it's worth it to link some of that into here yet,
 need to compare the experience on Windows too. I'm going to run Windows in the
-lab and use the WSL(Windows Subsystem for Linux) because I'm good with Ubuntu
-and I need to be able to compare the experiences. [I only run Ubuntu at home to
-limit my gaming time.]
+lab and use the WSL - Windows Subsystem for Linux - because I'm good with Ubuntu
+and I need to be able to compare the experiences.
 
 A lot of work can be removed by offloading it to containers or VMs, and I'll
 explain that plan longer term, but I want to setup support for microservice
@@ -22,6 +21,59 @@ setup cloud controllers, or log servers, for example. We can automatically
 collate data into different sorts of databases for different sorts of analysis,
 and automate everything. It's easy and multiplies what I can get done, so I plan
 on taking advantage of it.
+
+## Build Environments
+
+* git
+* cmake
+* python3.8
+* VS Code (and so many plugins...)
+  * C/C++
+  * CMake Tools
+  * Docker
+  * Bracket Pair Colorizer 2
+  * Better Comments
+  * GitLens
+  * Live Share
+  * Python
+  * 
+
+## Windows Build Environment
+
+* From Win App Store:
+  * Windows Terminal
+  * Windows Subsystem for Linux
+  * Ubuntu (18 or 20.04 LTS)
+* Visual Studio 2008 (Last compiled for, support will be deprecated later)
+* Visual Studio 2019 (Community)
+* [Chocolatey](https://chocolatey.org/install)
+
+``
+## Chocolatey Install
+`Set-ExecutionPolicy AllSigned`
+`Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))`
+
+### Dev Systems
+`choco install openssh git.install vlc 7zip.install googlechrome vcredist140 dotnetfx sysinternals ccleaner python vscode salt-minion`
+
+### Build system
+`choco install openssh git.install visualstudio2019buildtools vcredist140 salt-minion`
+
+
+#### Highly Rec'd
+* Notepad++ (Backup sanity check, really)
+* 
+
+### Setup for Protoc
+
+* Start Menu > x64 Native Tools CLI for VS 2019
+* Make sure git and cmake are installed and on path
+* `cd E:\repos\grpc\third_party\protobuf\cmake`
+* `mkdir build & cd build; mkdir release * cd release`
+* `make -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../../../../install ../..`
+* `nmake`
+* add "E:\repos\grpc\third_party\protobuf\cmake\build\release" to path
+* now can run `protoc` on windows
 
 ## Notes on Protocol Buffer implementation
 
@@ -39,7 +91,7 @@ all of this, on a build server, so whenever somebody checks in a new version of 
 .proto file, I can automatically rebuild these stubs on a build server. This
 will make it real easy to add functionality to applications.
 
-## Protobuffer schema
+### Protobuffer schema
 
 I started by writing my OpenAPI spec first. This is really just an extra
 abstraction layer over the gRPC stuff we need. I did this so I could have
@@ -53,11 +105,16 @@ openapi-generator generate -i DaniAPI.yaml -g protobuf-schema -o ./OpenAPI-proto
 For the sake of a demo, though, let's limit variables and make it as simple as
 possible. We're going to do helloWorld with the `./proto/helloWorld.proto` file.
 
-## Python
+
+
+
+## Linux Build
+
+### Python
 
 Required setup to make python generate our code.
 
-### Py Install
+#### Py Install
 
 Required files to install:
 
@@ -65,7 +122,7 @@ Required files to install:
 python3 -m pip install grpcio-tools
 ```
 
-### Py Generate
+#### Py Generate
 
 This generates both server stubs and client:
 
@@ -87,13 +144,13 @@ python3 -m grpc.tools.protoc \
 $PROTO_FILES
 ```
 
-## CPP
+### CPP
 
 I'm following along with
 [Intro to gRPC on C](https://medium.com/@andrewvetovitz/grpc-c-introduction-45a66ca9461f)
 to figure this out.
 
-### C++ Install
+#### C++ Install
 
 ```bash
 sudo apt install protobuf-compiler protobuf-compiler-grpc build-essential autoconf libtool pkg-config
@@ -130,7 +187,7 @@ protoc: error while loading shared libraries: libprotoc.so.22: cannot open share
 dmacdonald@amethyst:/mnt/data/home/projects/uc/DaniTest$ sudo ldconfig
 ```
 
-### C++ Generate
+#### C++ Generate
 
 ```bash
 # Now! Finally, to try compiling the c proto stubs:
@@ -142,7 +199,7 @@ protoc --grpc_out=$OUTPUT --plugin=protoc-gen-grpc=/usr/bin/grpc_cpp_plugin $PRO
 protoc --cpp_out=$OUTPUT $PROTO_FILES
 ```
 
-## To Actually Use It
+## Utilizing Protocol Buffers
 
 TODO!
 
