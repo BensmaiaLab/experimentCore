@@ -60,3 +60,14 @@ vagrant init detectionlab/win10
 vagrant up
 vagrant powershell # To Remote in
 ```
+
+## You want SysInternals tools.
+
+Especially 'Process Monitor' (`procmon`) and 'Process Explorer' (`procex`).
+Procmon logs all filesystem access (including registry keys, and other
+pseudo-filesystems), and procex acts as a drop-in Task Manager replacement on
+steroids. Both are essential for debugging the behavior of windows systems.
+
+You will want [symbol loading](https://www.xitalogy.com/windows-internals/2019/08/14/windows-internals-how-to-configure-symbols-in-sysinternals-process-explorer.html)
+setup for debugging purposes.
+
