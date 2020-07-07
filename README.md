@@ -59,6 +59,10 @@ on taking advantage of it.
 ### Build system
 `choco install openssh git.install visualstudio2019buildtools vcredist140 salt-minion`
 
+#### Jenkins
+
+see blbld.uchicago.edu
+
 
 #### Highly Rec'd
 * Notepad++ (Backup sanity check, really)
@@ -104,8 +108,6 @@ openapi-generator generate -i DaniAPI.yaml -g protobuf-schema -o ./OpenAPI-proto
 
 For the sake of a demo, though, let's limit variables and make it as simple as
 possible. We're going to do helloWorld with the `./proto/helloWorld.proto` file.
-
-
 
 
 ## Linux Build
@@ -189,6 +191,7 @@ dmacdonald@amethyst:/mnt/data/home/projects/uc/DaniTest$ sudo ldconfig
 
 #### C++ Generate
 
+##### Linux
 ```bash
 # Now! Finally, to try compiling the c proto stubs:
 OUTPUT='cpp'
@@ -198,6 +201,18 @@ PROTO_FILES='./proto/helloWorld.proto'
 protoc --grpc_out=$OUTPUT --plugin=protoc-gen-grpc=/usr/bin/grpc_cpp_plugin $PROTO_FILES
 protoc --cpp_out=$OUTPUT $PROTO_FILES
 ```
+
+##### Windows
+```powershell
+# Now! Finally, to try compiling the c proto stubs:
+$OUTPUT = 'cppServer'
+$PROTO_FILES = './proto/helloWorld.proto'
+
+# So it complains about the `grpc_cpp_plugin` program if I don't reset my environment here. So subbing in abs path is `/usr/bin/grpc_cpp_plugin`:
+protoc --grpc_out=$OUTPUT --plugin=protoc-gen-grpc=/usr/bin/grpc_cpp_plugin $PROTO_FILES
+protoc --cpp_out=$OUTPUT $PROTO_FILES
+```
+
 
 ## Utilizing Protocol Buffers
 
