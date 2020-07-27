@@ -36,7 +36,6 @@ on taking advantage of it.
   * GitLens
   * Live Share
   * Python
-  * 
 
 ## Windows Build Environment
 
@@ -48,25 +47,26 @@ on taking advantage of it.
 * Visual Studio 2019 (Community)
 * [Chocolatey](https://chocolatey.org/install)
 
-``
 ## Chocolatey Install
+
 `Set-ExecutionPolicy AllSigned`
 `Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))`
 
 ### Dev Systems
+
 `choco install openssh git.install vlc 7zip.install googlechrome vcredist140 dotnetfx sysinternals ccleaner python vscode salt-minion`
 
 ### Build system
+
 `choco install openssh git.install visualstudio2019buildtools vcredist140 salt-minion`
 
 #### Jenkins
 
 see blbld.uchicago.edu
 
-
 #### Highly Rec'd
+
 * Notepad++ (Backup sanity check, really)
-* 
 
 ### Setup for Protoc
 
@@ -108,7 +108,6 @@ openapi-generator generate -i DaniAPI.yaml -g protobuf-schema -o ./OpenAPI-proto
 
 For the sake of a demo, though, let's limit variables and make it as simple as
 possible. We're going to do helloWorld with the `./proto/helloWorld.proto` file.
-
 
 ## Linux Build
 
@@ -192,6 +191,7 @@ dmacdonald@amethyst:/mnt/data/home/projects/uc/DaniTest$ sudo ldconfig
 #### C++ Generate
 
 ##### Linux
+
 ```bash
 # Now! Finally, to try compiling the c proto stubs:
 OUTPUT='cpp'
@@ -203,6 +203,7 @@ protoc --cpp_out=$OUTPUT $PROTO_FILES
 ```
 
 ##### Windows
+
 ```powershell
 # Now! Finally, to try compiling the c proto stubs:
 $OUTPUT = 'cppServer'
@@ -212,7 +213,6 @@ $PROTO_FILES = './proto/helloWorld.proto'
 protoc --grpc_out=$OUTPUT --plugin=protoc-gen-grpc=/usr/bin/grpc_cpp_plugin $PROTO_FILES
 protoc --cpp_out=$OUTPUT $PROTO_FILES
 ```
-
 
 ## Utilizing Protocol Buffers
 
@@ -228,4 +228,3 @@ Really, stuff to look into more later:
 
 * [101 on the build process](https://thoughtbot.com/blog/the-magic-behind-configure-make-make-install)
 * [autotools.io - Book on build tooling](https://autotools.io/)
-
