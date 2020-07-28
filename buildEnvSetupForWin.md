@@ -39,11 +39,11 @@ iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/in
 
 ### Dev Systems
 
-`choco install -y --force --params "'ALLUSERS=1" openssh git.install vlc 7zip.install googlechrome vcredist140 dotnetfx sysinternals ccleaner python vscode salt-minion sysinternals virtualbox vagrant vagrant-manager firacode mingw cmake`
+`choco install -y --force --params "'ALLUSERS=1" openssh git.install vlc 7zip.install googlechrome vcredist140 dotnetfx sysinternals ccleaner python vscode salt-minion sysinternals virtualbox vagrant vagrant-manager firacode mingw cmake nomachine`
 
 ### Build system
 
-`choco install -y --force --params "'ALLUSERS=1" openssh git.install visualstudio2019buildtools vcredist140 salt-minion mingw cmake`
+`choco install -y --force --params "'ALLUSERS=1" openssh git.install visualstudio2019buildtools vcredist140 salt-minion mingw cmake nomachine`
 
 ## Git Repo and Docker containers on Github
 
