@@ -45,6 +45,14 @@ iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/in
 
 `choco install -y --force --params "'ALLUSERS=1" openssh git.install visualstudio2019buildtools vcredist140 salt-minion mingw cmake nomachine hugo-extended nodejs`
 
+### Endpoints
+
+Things I need to do to configure experimental systems:
+
+* Open Powershell to remote connections:
+  * `Enable-PSRemoting`
+
+
 ## Git Repo and Docker containers on Github
 
 * https://help.github.com/en/packages/publishing-and-managing-packages/about-github-packages
