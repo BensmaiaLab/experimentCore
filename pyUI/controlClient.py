@@ -1,4 +1,5 @@
 # /usr/bin/python3
+# pylint: disable=invalid-name
 """ GUI based controller client for bensmaialab."""
 
 # controlClient.py
@@ -9,6 +10,14 @@ import webbrowser
 import logging
 import logging.config
 import wx
+
+# Starting to implement grpc here
+import grpc
+import pyClient.helloWorld_pb2_grpc
+channel = grpc.insecure_channel('localhost:50051')
+stub = pyClient.helloWorld_pb2_grpc.helloRPCStub(channel)
+stub.sendRequest("Dani")
+
 
 def genText(text, panel):
     """Standard formatting for window text."""

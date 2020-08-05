@@ -1,9 +1,11 @@
 #! /usr/bin/python3
+# pylint: disable=invalid-name
 """ Backend control server. Keeps state, and responds to messages about state."""
 import argparse
 import logging
 import signal
 import sys
+
 
 logging.basicConfig(
     format='%(asctime)-15s | %(message)s',

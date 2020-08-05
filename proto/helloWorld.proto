@@ -17,5 +17,5 @@ message helloRequest {
 
 // The response message containing response
 message helloReply {
-    int32 reply = 1;
+    string reply = 1;
 }
