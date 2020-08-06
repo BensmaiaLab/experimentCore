@@ -24,7 +24,7 @@ class helloServicer(pyClient.helloWorld_pb2_grpc.helloRPCServicer):
     def sendRequest(self, request, context):
         """Implements stuff."""
         log.info("sendRequest()")
-        return pyClient.helloWorld_pb2.helloReply(f"Hello, {request}!")
+        return pyClient.helloWorld_pb2.helloReply(reply=f"Hello, {request.name}!")
 
 
 def serve():

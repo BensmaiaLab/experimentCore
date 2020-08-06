@@ -18,7 +18,8 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='helloRPC',
   syntax='proto3',
   serialized_options=b'\n\007ex.grpc',
-  serialized_pb=b'\n\x10helloWorld.proto\x12\x08helloRPC\"\x1c\n\x0chelloRequest\x12\x0c\n\x04name\x18\x01 \x01(\t\"\x1b\n\nhelloReply\x12\r\n\x05reply\x18\x01 \x01(\x05\x32I\n\x08helloRPC\x12=\n\x0bsendRequest\x12\x16.helloRPC.helloRequest\x1a\x14.helloRPC.helloReply\"\x00\x42\t\n\x07\x65x.grpcb\x06proto3'
+  create_key=_descriptor._internal_create_key,
+  serialized_pb=b'\n\x10helloWorld.proto\x12\x08helloRPC\"\x1c\n\x0chelloRequest\x12\x0c\n\x04name\x18\x01 \x01(\t\"\x1b\n\nhelloReply\x12\r\n\x05reply\x18\x01 \x01(\t2I\n\x08helloRPC\x12=\n\x0bsendRequest\x12\x16.helloRPC.helloRequest\x1a\x14.helloRPC.helloReply\"\x00\x42\t\n\x07\x65x.grpcb\x06proto3'
 )
 
 
@@ -30,6 +31,7 @@ _HELLOREQUEST = _descriptor.Descriptor(
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
+  create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
       name='name', full_name='helloRPC.helloRequest.name', index=0,
@@ -37,7 +39,7 @@ _HELLOREQUEST = _descriptor.Descriptor(
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -61,14 +63,15 @@ _HELLOREPLY = _descriptor.Descriptor(
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
+  create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
       name='reply', full_name='helloRPC.helloReply.reply', index=0,
-      number=1, type=5, cpp_type=1, label=1,
-      has_default_value=False, default_value=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -112,6 +115,7 @@ _HELLORPC = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
+  create_key=_descriptor._internal_create_key,
   serialized_start=89,
   serialized_end=162,
   methods=[
@@ -123,6 +127,7 @@ _HELLORPC = _descriptor.ServiceDescriptor(
     input_type=_HELLOREQUEST,
     output_type=_HELLOREPLY,
     serialized_options=None,
+    create_key=_descriptor._internal_create_key,
   ),
 ])
 _sym_db.RegisterServiceDescriptor(_HELLORPC)

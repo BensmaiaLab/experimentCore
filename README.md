@@ -98,7 +98,7 @@ will make it real easy to add functionality to applications.
 ### Requirements
 
 ```
-python3 -m pip install grpcio protobuf wxpython
+python3 -m pip install grpcio grpcio-tools protobuf wxpython
 ```
 
 ### Protobuffer schema

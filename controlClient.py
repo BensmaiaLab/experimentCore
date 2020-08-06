@@ -3,21 +3,27 @@
 """ GUI based controller client for bensmaialab."""
 
 # controlClient.py
-import json
-import os
 import argparse
 import webbrowser
 import logging
 import logging.config
+import json
+import os
+
 import wx
 
-# Starting to implement grpc here
 import grpc
+import pyClient.helloWorld_pb2
 import pyClient.helloWorld_pb2_grpc
-channel = grpc.insecure_channel('localhost:50051')
-stub = pyClient.helloWorld_pb2_grpc.helloRPCStub(channel)
-stub.sendRequest("Dani")
 
+
+# This sends the RPC call:
+with grpc.insecure_channel('localhost:50051') as channel:
+    stub = pyClient.helloWorld_pb2_grpc.helloRPCStub(channel)
+    request = pyClient.helloWorld_pb2.helloRequest(name='Dani')
+    response = stub.sendRequest(request)
+    print(response.reply)
+    exit()
 
 def genText(text, panel):
     """Standard formatting for window text."""
@@ -97,6 +103,15 @@ class MainFrame(wx.Frame):
         self.SetStatusText("Welcome to wxPython!")
         self.log.info("Main window rendered!")
 
+    def loadConfig(self, filename: str = "configClient.json"):
+        """Loads JSON config file from disk."""
+        if not os.path.exists(filename):
+            self.log.info("No config file found, setting default config")
+            self.config = {"serverAddress": "localhost", "serverPort": 42000}
+        else:
+            with open(filename) as configFile:
+                self.config = json.load(configFile)
+
     def onPress(self, event):
         # pylint: disable=unused-argument
         """Test button."""
@@ -134,16 +149,6 @@ class MainFrame(wx.Frame):
         logging.config.dictConfig(dictLogConfig)
         self.log = logging.getLogger('controlClient')
         self.log.setLevel(logging.DEBUG)
-
-
-    def loadConfig(self, filename: str = "configControlClient.json"):
-        """Loads JSON config file from disk."""
-        if not os.path.exists(filename):
-            self.log.info("No config file found, setting default config")
-            self.config = {"serverAddress": "localhost", "serverPort": 42000}
-        else:
-            with open(filename) as configFile:
-                self.config = json.load(configFile)
 
     def makeMenuBar(self):
         """
