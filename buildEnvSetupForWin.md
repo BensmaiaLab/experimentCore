@@ -39,11 +39,11 @@ iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/in
 
 ### Dev Systems
 
-`choco install -y --force --params "ALLUSERS=1" openssh git.install vlc 7zip.install googlechrome vcredist140 dotnetfx sysinternals ccleaner python vscode salt-minion sysinternals virtualbox vagrant vagrant-manager firacode mingw cmake nomachine hugo-extended nodejs`
+`choco install -y --force --params "ALLUSERS=1" openssh git.install vlc 7zip.install googlechrome vcredist140 dotnetfx sysinternals ccleaner python vscode saltminion sysinternals virtualbox vagrant vagrant-manager firacode mingw cmake nomachine hugo-extended nodejs`
 
 ### Build system
 
-`choco install -y --force --params "ALLUSERS=1" openssh git.install visualstudio2019buildtools vcredist140 salt-minion mingw cmake nomachine hugo-extended nodejs`
+`choco install -y --force --params "ALLUSERS=1" openssh git.install visualstudio2019buildtools vcredist140 saltminion mingw cmake nomachine hugo-extended nodejs`
 
 ### Endpoints
 
@@ -54,7 +54,7 @@ Things I need to do to configure experimental systems:
 
 ### Lab PCs
 
-`choco install -y --force --params "ALLUSERS=1" openssh git.install salt-minion nomachine vlc 7zip.install googlechrome ccleaner python vscode`
+`choco install -y --force --params "ALLUSERS=1" openssh git.install saltminion nomachine vlc 7zip.install googlechrome ccleaner python vscode`
 
 
 ## Git Repo and Docker containers on Github
