@@ -95,6 +95,12 @@ all of this, on a build server, so whenever somebody checks in a new version of 
 .proto file, I can automatically rebuild these stubs on a build server. This
 will make it real easy to add functionality to applications.
 
+### Requirements
+
+```
+python3 -m pip install grpcio protobuf wxpython
+```
+
 ### Protobuffer schema
 
 I started by writing my OpenAPI spec first. This is really just an extra
