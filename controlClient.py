@@ -16,15 +16,6 @@ import grpc
 import pyClient.helloWorld_pb2
 import pyClient.helloWorld_pb2_grpc
 
-
-# This sends the RPC call:
-with grpc.insecure_channel('localhost:50051') as channel:
-    stub = pyClient.helloWorld_pb2_grpc.helloRPCStub(channel)
-    request = pyClient.helloWorld_pb2.helloRequest(name='Dani')
-    response = stub.sendRequest(request)
-    print(response.reply)
-    exit()
-
 def genText(text, panel):
     """Standard formatting for window text."""
     text = wx.StaticText(panel, label=text)
@@ -36,7 +27,7 @@ def genText(text, panel):
 
 
 class ConsoleLogHandler(logging.StreamHandler):
-    """Captures and draws log messages to window."""
+    """Captures and draws log messages to wx window."""
 
     def __init__(self, textctrl):
         """"""
@@ -92,8 +83,8 @@ class MainFrame(wx.Frame):
         topSizer.Add(logSizer)
         mainPanel.SetSizer(topSizer)
         # topSizer.Fit(self)
-        txtHandler = ConsoleLogHandler(logText)
-        self.log.addHandler(txtHandler)
+        
+        self.log.addHandler(ConsoleLogHandler(logText))
 
         # create a menu bar
         self.makeMenuBar()
@@ -115,8 +106,12 @@ class MainFrame(wx.Frame):
     def onPress(self, event):
         # pylint: disable=unused-argument
         """Test button."""
-        self.log.error("Error Will Robinson!")
-        self.log.info("Informational message")
+        # This sends the RPC call:
+        with grpc.insecure_channel('localhost:50051') as channel:
+            stub = pyClient.helloWorld_pb2_grpc.helloRPCStub(channel)
+            request = pyClient.helloWorld_pb2.helloRequest(name='Dani')
+            response = stub.sendRequest(request)
+            self.log.info(response.reply)
 
     def setupLogging(self, logFilename: str = "controlClient.log"):
         """Setup logging to file and window output."""

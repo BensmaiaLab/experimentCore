@@ -1,0 +1,5 @@
+{
+    "listenAddress": "[::]",
+    "port": 50051,
+    "logfilename": "controlServer.log"
+}

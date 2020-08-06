@@ -5,6 +5,8 @@ import argparse
 import logging
 import signal
 import sys
+import os
+import json
 
 from concurrent import futures
 import grpc
@@ -17,14 +19,25 @@ logging.basicConfig(
 log = logging.getLogger('controlServer')
 log.setLevel(logging.DEBUG)
 
+def loadConfig(filename: str = "configServer.json"):
+    """Loads JSON config file from disk."""
+    if not os.path.exists(filename):
+        log.info("No config file found, setting default config")
+        return {"serverAddress": "localhost", "serverPort": 42000}
+    else:
+        with open(filename) as configFile:
+            return json.load(configFile)
+
+config = loadConfig()
 
 class helloServicer(pyClient.helloWorld_pb2_grpc.helloRPCServicer):
     """Implements the helloRPC server."""
 
     def sendRequest(self, request, context):
         """Implements stuff."""
-        log.info("sendRequest()")
-        return pyClient.helloWorld_pb2.helloReply(reply=f"Hello, {request.name}!")
+        name = request.name
+        log.info("sendRequest('%s')", name)
+        return pyClient.helloWorld_pb2.helloReply(reply=f"Hello, {name}!")
 
 
 def serve():
@@ -32,14 +45,17 @@ def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     pyClient.helloWorld_pb2_grpc.add_helloRPCServicer_to_server(
         helloServicer(), server)
-    server.add_insecure_port('[::]:50051')
+    #TODO: during config load, confirm required params are there
+    address = config['listenAddress'] + ':' + str(config['port'])
+    log.info("Listening on: %s", address)
+    server.add_insecure_port(address)
     server.start()
     server.wait_for_termination()
 
 
 def shutdown():
     """Destructor stuff."""
-    log.info("shutdown()")
+    log.info("shutdown() called.")
     logging.shutdown()
 
 
