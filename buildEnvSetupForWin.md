@@ -52,6 +52,10 @@ Things I need to do to configure experimental systems:
 * Open Powershell to remote connections:
   * `Enable-PSRemoting`
 
+### Lab PCs
+
+`choco install -y --force --params "'ALLUSERS=1" openssh git.install salt-minion nomachine vlc 7zip.install googlechrome ccleaner python vscode`
+
 
 ## Git Repo and Docker containers on Github
 
