@@ -49,6 +49,7 @@ class CCFrameImpl(CCFrame):
             self.setupLogging(self.config['logfilename'])
         else:
             self.setupLogging()
+        self.log.info('Loaded. Logging to %s', self.config['logfilename'])
 
     def loadConfig(self, filename: str = "configClient.json"):
         """Loads JSON config file from disk."""
@@ -68,7 +69,7 @@ class CCFrameImpl(CCFrame):
                     'class': 'logging.FileHandler',
                     'formatter': 'myFormatter',
                     'filename': logFilename
-                    },
+                },
                 'terminalHandler': {
                     'class': 'logging.StreamHandler',
                     'formatter': 'myFormatter',
@@ -76,7 +77,7 @@ class CCFrameImpl(CCFrame):
                 }
             },
             'loggers':{
-                'controlClient': {
+                'CC': {
                     'handlers': ['fileHandler', 'terminalHandler'],
                     'level': 'INFO',
                 }
@@ -88,17 +89,21 @@ class CCFrameImpl(CCFrame):
                 }
             }
         }
+        fmt = logConfig['formatters']['myFormatter']
         logging.config.dictConfig(logConfig)
-        self.log = logging.getLogger('controlClient')
+        self.log = logging.getLogger('CC')
         self.log.setLevel(logging.DEBUG)
-        self.log.addHandler(ConsoleHandler(self.logText))
-
+        wLogHandler = ConsoleHandler(self.logText)
+        wLogHandler.setFormatter(logging.Formatter(
+            fmt=fmt['format'],
+            datefmt=fmt['datefmt']
+        ))
+        self.log.addHandler(wLogHandler)
 
     def onPress(self, event):
         # pylint: disable=unused-argument
         """Test button."""
         # This sends the RPC call:
-        self.log.info("Button pressed!")
         with grpc.insecure_channel('localhost:50051') as channel:
             stub = helloWorld_pb2_grpc.helloRPCStub(channel)
             request = helloWorld_pb2.helloRequest(name='Dani')
