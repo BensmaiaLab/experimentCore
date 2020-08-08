@@ -10,8 +10,8 @@ import json
 
 from concurrent import futures
 import grpc
-import pyClient.helloWorld_pb2
-import pyClient.helloWorld_pb2_grpc
+import cc.helloWorld_pb2
+import cc.helloWorld_pb2_grpc
 
 logging.basicConfig(
     format='%(asctime)-15s %(name)s|%(levelname)s| %(message)s',
@@ -26,26 +26,30 @@ def loadConfig(filename: str = "configServer.json"):
         return {"serverAddress": "localhost", "serverPort": 42000}
     else:
         with open(filename) as configFile:
-            return json.load(configFile)
+            cfg = json.load(configFile)
+            reqKeys = ['listenAddress', 'port']
+            for key in reqKeys:
+                if key not in cfg:
+                    raise KeyError(f"Required key {key} in {filename} not found.")
+            return cfg
 
 config = loadConfig()
 
-class helloServicer(pyClient.helloWorld_pb2_grpc.helloRPCServicer):
+class helloServicer(cc.helloWorld_pb2_grpc.helloRPCServicer):
     """Implements the helloRPC server."""
 
     def sendRequest(self, request, context):
         """Implements stuff."""
         name = request.name
         log.info("sendRequest('%s')", name)
-        return pyClient.helloWorld_pb2.helloReply(reply=f"Hello, {name}!")
+        return cc.helloWorld_pb2.helloReply(reply=f"Hello, {name}!")
 
 
 def serve():
     """Run the server."""
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    pyClient.helloWorld_pb2_grpc.add_helloRPCServicer_to_server(
+    cc.helloWorld_pb2_grpc.add_helloRPCServicer_to_server(
         helloServicer(), server)
-    #TODO: during config load, confirm required params are there
     address = config['listenAddress'] + ':' + str(config['port'])
     log.info("Listening on: %s", address)
     server.add_insecure_port(address)

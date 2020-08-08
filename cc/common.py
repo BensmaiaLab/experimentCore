@@ -133,6 +133,8 @@ class CCFrameImpl(CCFrame):
 class ControlClientApp(wx.App):
     """Instance the Control Client App."""
     def OnInit(self):
+        """Spawn the window."""
+        # pylint: disable=attribute-defined-outside-init
         self.ccframe = CCFrameImpl(None, wx.ID_ANY, "")
         self.SetTopWindow(self.ccframe)
         self.ccframe.Show()

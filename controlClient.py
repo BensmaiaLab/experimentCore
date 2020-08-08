@@ -1,4 +1,4 @@
-#! /bin/python3
+#! /usr/bin/python3
 """ Control Client application."""
 import argparse
 from cc.common import ControlClientApp
