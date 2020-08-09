@@ -106,7 +106,7 @@ class CCFrameImpl(CCFrame):
         # This sends the RPC call:
         with grpc.insecure_channel('localhost:50051') as channel:
             stub = helloWorld_pb2_grpc.helloRPCStub(channel)
-            request = helloWorld_pb2.helloRequest(name=self.nameInputBox.GetValue())
+            request = helloWorld_pb2.helloRequest(name=self.inputBoxName.GetValue())
             response = stub.sendRequest(request)
             self.log.info(response.reply)
 

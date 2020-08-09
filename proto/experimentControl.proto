@@ -1,0 +1,34 @@
+syntax = "proto3";
+option java_package = "ex.grpc";
+
+package expCtrlRPC;
+
+// Defines the service
+service expCtrlRPC {
+    // ping is used for testing
+    rpc ping (pingRequest) returns (pingReply) {}
+
+    // start/pause/stop to control master execution
+    rpc startExperiment() returns (boolReply) {}
+    rpc pauseExperiment() returns (boolReply) {} // pause can complete trial before stopping
+    rpc stopExperiment() returns (boolReply) {}  // stop *should* immediately halt
+
+    // Trials are sections inside of experiment
+    rpc startTrial() returns (boolReply) {}
+    rpc stopTrial() returns (boolReply) {}
+}
+
+message boolReply {
+    bool successful = 1;
+    string message = 2;  // Used for errors if successful is false
+}
+
+// The request message containing requested numbers
+message pingRequest {
+    string name = 1;
+}
+
+// The response message containing response
+message pingReply {
+    string reply = 1;
+}

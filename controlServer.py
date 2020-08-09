@@ -24,14 +24,13 @@ def loadConfig(filename: str = "configServer.json"):
     if not os.path.exists(filename):
         log.info("No config file found, setting default config")
         return {"serverAddress": "localhost", "serverPort": 42000}
-    else:
-        with open(filename) as configFile:
-            cfg = json.load(configFile)
-            reqKeys = ['listenAddress', 'port']
-            for key in reqKeys:
-                if key not in cfg:
-                    raise KeyError(f"Required key {key} in {filename} not found.")
-            return cfg
+    with open(filename) as configFile:
+        cfg = json.load(configFile)
+        reqKeys = ['listenAddress', 'port']
+        for key in reqKeys:
+            if key not in cfg:
+                raise KeyError(f"Required key '{key}' in configFile '{filename}' not found.")
+        return cfg
 
 config = loadConfig()
 
