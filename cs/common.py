@@ -17,6 +17,7 @@ class BaseClass():
     """Just an example to remind myself of avail features."""
 
     def __init__(self):
+        # super().__init__(args, kwargs)
         self.__version__ = '1.0'
 
     def __del__(self):
@@ -54,9 +55,9 @@ def fastRawFileRead(filename: str):
     """Fastest way to read large block data from disk, maybe?"""
     # Use pickling if possible, this otherwise?
     # Currently this just reads it, destroying the buffer over again.
-    # 
     tmp = bytearray(1048576) # b = bytearray(16)
     handle = io.open(filename, "rb")
+    i = 0
     for i in itertools.count():
         numread = handle.readinto(tmp)
         if not numread:

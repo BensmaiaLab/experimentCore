@@ -13,14 +13,6 @@ from .gui import CCFrame
 from . import helloWorld_pb2
 from . import helloWorld_pb2_grpc
 
-def genText(text, panel):
-    """Standard formatting for window text."""
-    text = wx.StaticText(panel, label=text)
-    font = text.GetFont()
-    # font.PointSize += 10
-    font = font.Bold()
-    text.SetFont(font)
-    return text
 
 class ConsoleHandler(logging.StreamHandler):
     """Captures and draws log messages to wx window."""
