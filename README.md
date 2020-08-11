@@ -228,6 +228,11 @@ Both Python and C++ are classy languages, and the best thing to do would be to
 include the generated files into your project, and (I think, testing still!)
 subclass from the Servicer object.
 
+## ClearPath Motors
+
+* https://www.teknic.com/downloads/
+* file:///C:/Users/dmacdonald/Documents/Manuals/Clearpath-SC%20User%20Manual.pdf
+
 ## References
 
 Really, stuff to look into more later:
