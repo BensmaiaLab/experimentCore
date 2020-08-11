@@ -90,10 +90,10 @@ int getNumPorts(SysManager &myMgr){
 int printNodeDetails(INode node&) {
     //TODO: Switch this to log.info()
     printf("  NodeType: %d\n", node.Info.NodeType());
-    printf("    userID: %s\n", node.Info.UserID.Value());
-    printf("FW version: %s\n", node.Info.FirmwareVersion.Value());
-    printf("  Serial #: %d\n", node.Info.SerialNumber.Value());
     printf("     Model: %s\n", node.Info.Model.Value());
+    printf("  Serial #: %d\n", node.Info.SerialNumber.Value());
+    printf("FW version: %s\n", node.Info.FirmwareVersion.Value());
+    printf("    userID: %s\n", node.Info.UserID.Value());
 }
 
 

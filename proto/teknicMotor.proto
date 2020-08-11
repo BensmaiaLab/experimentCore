@@ -1,0 +1,125 @@
+// Best practices: https://medium.com/@akhaku/protobuf-definition-best-practices-87f281576f31
+syntax = "proto3";
+
+package teknicMotor;
+
+// Defines the service
+service teknicMotorRPC {
+    rpc test (Empty) returns (genericReply) {}
+    rpc initialize (Empty) returns (initReply) {}
+    //? I don't know if I like
+    rpc move (nodeRequest) returns (moveReply) {}
+    rpc getNodeInfo(nodeRequest) returns (nodeDetails) {}
+    rpc setBrake (Empty) returns (genericReply) {}
+    rpc unsetBrake (Empty) returns (genericReply) {}
+}
+
+
+message Empty {}
+message genericReply {
+    bool successful = 1;  // Worked or not?
+    string message = 2;   // Error/info message
+}
+
+// Skipped the notAvail fields.
+enum NodeStatusField {
+    UNKNOWN_STATUS = 0;
+    UserAlert = 1;      // bit-mapped field describes current detected motion. The VEL_BOTH state will occur with accumulating status when the motor has moved in both directions since the last status query.
+    NotReady = 2;       // Node is not ready to execute motion. clear shutdowns, ensure node Enabled, clear any NodeStops
+    MoveBufAvail = 3;   // Node can receive additional move commands which will be stored in the Node's move buffer
+    Ready = 4;          // Node is ready to receive motion commands.
+    PowerEvent = 5;     // power status register can be used to determine the specifics
+    AlertPresent = 6;
+    InPosLimit = 8;
+    InNegLimit = 9;
+    MotionBlocked = 10;
+    WasHomed = 11;
+    Homing = 12;
+    GoingDisabled = 13;
+    StatusEvent = 14;
+    Enabled = 15;
+    MoveCanceled = 16;
+    MoveDone = 17;
+    OutOfRange = 18;
+    BFromEnd = 19;
+    AbovePosn = 20;  // This field asserts when the measured position is greater than the Absolute Position location specified in the torque limiting dialog window of ClearView.
+    AtTargetVel = 21;
+    InA = 22;
+    InB = 23;
+    InvInA = 24;
+    InvInB = 25;
+    AFromStart = 28;
+    MoveCmdNeg = 29;
+    Disabled = 30;
+    TimerExpired = 31;
+    InMotion = 32;
+    InMotion2 = 33;
+    InDisableStop = 34;
+    VectorSearch = 37;
+    MoveCmdComplete = 38;
+    InhardStop = 39;
+    ShutdownState = 40;
+    ShutdownState2 = 41;
+    HwFailure = 42;
+    TriggerArmed = 43;
+    StepsActive = 44;
+    SoftwareInputs = 46;
+}
+
+enum NodeAlertField {
+    UNKNOWN_ALERT = 0;
+    No_Alerts = 1;
+    MoveGenRange = 35;
+    JrkLimVelRequestBad = 38;
+    PhaseSensorFailed = 40;
+    LimSwitchActivated = 41;
+    SoftLimitExceeded = 42;
+    MtrEncGlitch = 60;
+    MtrPhaseOverload = 64;
+    MtrBadSetupParams = 66;
+    HardStopBrokeFree = 67;
+    TrackingShutdown = 69;
+    RMSOverloadShutdown = 71;
+    NoCommSweepFailed = 76;
+    NoCommSweepReversed = 77;
+    NoCommFailed = 78;
+    TempAmbientHigh = 80;
+    BusOverCurrent = 82;
+    BusOverVoltage = 83;
+    BusVoltageLow = 84;
+    BusRMSOverload = 85;
+    NoCommBusLow = 89;
+}
+
+
+message NodeInfo {
+    string type = 1;
+    string model = 2;
+    string serial = 3;
+    string firmwareVersion = 4;
+    string userID = 5;
+    uint32 positioningResolution = 6;
+    string expertInfo = 7;
+}
+
+message nodeDetails {
+    uint32 portNumber = 1;
+    uint32 nodeNumber = 2;
+    NodeInfo info = 3;
+    NodeStatusField status = 4;
+    NodeAlertField alert = 5;
+}
+
+
+message portDetails {
+    uint32 nodeCount = 1;
+}
+
+message initReply {
+    uint32 portCount = 1;
+    uint32 totalNodeCount = 2;
+
+}
+
+message nodeRequest { uint32 node = 1; }  // Node index
+message moveReply {}

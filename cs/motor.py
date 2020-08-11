@@ -7,7 +7,7 @@ from .common import Entity
 class Motor(Entity):
     """Generic motor implementation."""
 
-        def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super(Motor, self).__init__(*args, **kwargs)
 
 
@@ -17,8 +17,9 @@ class TeknicMotor(Motor):
 
     def __init__(self, *args, **kwargs):
         super(TeknicMotor, self).__init__(*args, **kwargs)
+        self._initialize()
 
-    def scan():
+    def _initialize(self):
         """SC Hub will initialize connected motors, and return a list of
         available motors."""
-        pass
+
