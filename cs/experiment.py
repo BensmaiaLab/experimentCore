@@ -1,23 +1,9 @@
 #! /usr/bin/python3
 """Data structures for control server."""
 
-from uuid import UUID, uuid4
+# from uuid import UUID, uuid4
 from datetime import timedelta
-
-
-class Entity():
-    """Generic object."""
-
-    def __init__(
-            self,
-            name: str = "NewEntity",
-            uuid: UUID = None
-    ):
-        self.name = name
-        self.uuid = uuid or uuid4()
-
-    def __repr__(self):
-        return 'CS Entity (' + str(self.uuid) + ')'
+from .common import Entity
 
 
 class Event(Entity):

@@ -13,6 +13,21 @@ def isUUID(obj):
         return False
 
 
+class Entity():
+    """Generic object."""
+
+    def __init__(
+            self,
+            name: str = "NewEntity",
+            uuid: UUID = None
+    ):
+        self.name = name
+        self.uuid = uuid or uuid4()
+
+    def __repr__(self):
+        return 'CS Entity (' + str(self.uuid) + ')'
+
+
 class BaseClass():
     """Just an example to remind myself of avail features."""
 
