@@ -1,7 +1,7 @@
 #! /usr/bin/python3
 """Common stuff for implementing server."""
 
-from uuid import UUID
+from uuid import UUID, uuid4
 import itertools
 import io
 
