@@ -1,30 +1,7 @@
 # ExperimentCore
 
-Is going to become a central repo I'll build that includes a lot of the useful
-tools and libraries that make sense for us to have in one place.
-
-The way this will work is we use `git submodule` to link any third party
-utilities we require into somewhere like `/third_party/`. This allows us to
-share and link to that stuff,
-and extend it locally as we need to. As is usual in these projects, we'd prefer
-to limit dependencies and mark them explicitly where they're used.
-
-I'm still figuring out whether it's worth it to link some of that into here yet,
-need to compare the experience on Windows too. I'm going to run Windows in the
-lab and use the WSL - Windows Subsystem for Linux - because I'm good with Ubuntu
-and I need to be able to compare the experiences.
-
-A lot of work can be removed by offloading it to containers or VMs, and I'll
-explain that plan longer term, but I want to setup support for microservice
-architecture if it's easy to do so. The basic idea is if we want to do stuff like
-setup cloud controllers, or log servers, for example. We can automatically
-collate data into different sorts of databases for different sorts of analysis,
-and automate everything. It's easy and multiplies what I can get done, so I plan
-on taking advantage of it.
-
 ## Build Environments
 
-* git
 * cmake
 * python3.8
 * VS Code (and so many plugins...)
@@ -98,8 +75,11 @@ will make it real easy to add functionality to applications.
 ### Requirements
 
 ```
-python3 -m pip install grpcio grpcio-tools protobuf wxpython
+python3 -m pip install grpcio grpcio-tools protobuf
 ```
+
+on ubuntu/debian, easier to:
+```sudo apt install python3-wxgtk4.0```
 
 ### Protobuffer schema
 
@@ -117,19 +97,7 @@ possible. We're going to do helloWorld with the `./proto/helloWorld.proto` file.
 
 ## Linux Build
 
-### Python
-
-Required setup to make python generate our code.
-
-#### Py Install
-
-Required files to install:
-
-```bash
-python3 -m pip install grpcio-tools
-```
-
-#### Py Generate
+### Python Generate
 
 This generates both server stubs and client:
 
@@ -227,11 +195,6 @@ TODO!
 Both Python and C++ are classy languages, and the best thing to do would be to
 include the generated files into your project, and (I think, testing still!)
 subclass from the Servicer object.
-
-## ClearPath Motors
-
-* https://www.teknic.com/downloads/
-* file:///C:/Users/dmacdonald/Documents/Manuals/Clearpath-SC%20User%20Manual.pdf
 
 ## References
 
