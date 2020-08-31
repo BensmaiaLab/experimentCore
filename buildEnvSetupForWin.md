@@ -39,11 +39,21 @@ iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/in
 
 ### Dev Systems
 
-`choco install -y --force --params "ALLUSERS=1" openssh git.install vlc 7zip.install googlechrome vcredist140 dotnetfx sysinternals ccleaner python vscode saltminion sysinternals virtualbox vagrant vagrant-manager firacode mingw cmake nomachine hugo-extended nodejs`
+`choco install -y --force --params "ALLUSERS=1" openssh git.install vlc 7zip.install googlechrome vcredist140 dotnetfx sysinternals ccleaner python vscode saltminion sysinternals virtualbox vagrant vagrant-manager firacode mingw nomachine hugo-extended nodejs`
+`choco install -y --force --params "ALLUSERS=1 ADD_CMAKE_TO_PATH=System" cmake`
+```powershell
+choco install -y --no-progress --force visualstudio2019community --package-parameters "\
+--norestart --nocache --includeRecommended --includeOptional \
+--add Microsoft.VisualStudio.Workload.NativeDesktop \
+--add Microsoft.VisualStudio.Workload.NativeCrossPlat \
+--add Microsoft.VisualStudio.Workload.ManagedDesktop \
+--add Microsoft.VisualStudio.Workload.Python"
+```
 
 ### Build system
 
-`choco install -y --force --params "ALLUSERS=1" openssh git.install visualstudio2019buildtools vcredist140 saltminion mingw cmake nomachine hugo-extended nodejs`
+`choco install -y --force --params "ALLUSERS=1" openssh git.install visualstudio2019buildtools vcredist140 saltminion mingw nomachine hugo-extended nodejs`
+`choco install -y --force --params "ALLUSERS=1 ADD_CMAKE_TO_PATH=System" cmake`
 
 ### Endpoints
 
@@ -55,7 +65,7 @@ Things I need to do to configure experimental systems:
 ### Lab PCs
 
 `choco install -y --force --params "ALLUSERS=1" openssh git.install saltminion nomachine vlc 7zip.install googlechrome ccleaner python vscode`
-
+`choco install -y --force --params "ALLUSERS=1 ADD_CMAKE_TO_PATH=System" cmake`
 
 ## Git Repo and Docker containers on Github
 
