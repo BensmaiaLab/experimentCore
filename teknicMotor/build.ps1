@@ -12,11 +12,11 @@ write-host -ForegroundColor Green "Building in: ${BuildPath}"
 # Hackish, but makes it work across systems. Add yours to array if necessary.
 # Uses whichever path it finds first that's valid.
 $vcpkgPaths = @(
-    "C:/Users/Somlab/repos/vcpkg/scripts/buildsystems/vcpkg.cmake",
-    "D:/vcpkg/scripts/buildsystems"
+    "C:/Users/Somlab/repos/vcpkg",
+    "D:/vcpkg"
 )
 ForEach ($p in $vcpkgPaths) {
-    $vcpkgPath = $p + "/vcpkg.cmake"
+    $vcpkgPath = $p + "/scripts/buildsystems/vcpkg.cmake"
     if (Test-Path $vcpkgPath) {break}
 }
 

@@ -11,7 +11,10 @@
 #include <iostream>
 #include <boost/log/trivial.hpp>
 #include <vector>
+#include <chrono>
+#include <thread>
 #include "motorAPI.h"
+
 
 using namespace sFnd;
 
@@ -58,7 +61,7 @@ void MotorAPI::homeNode(INode &node){
         }
         BOOST_LOG_TRIVIAL(info) << "Node completed homing.";
     } else {
-        BOOST_LOG_TRIVIAL(error) << "Homing never setup through ClearView. The node cannot be homed: " << node.Info.UserID.Value();
+        BOOST_LOG_TRIVIAL(warning) << "Homing never setup through ClearView. The node cannot be homed: " << node.Info.UserID.Value();
     }
 }
 
@@ -129,14 +132,13 @@ MotorAPI::MotorAPI(void) {
         }
         
     } catch (mnErr &theErr) {
-        //This statement will print the address of the error, the error code
-        // (defined by the mnErr class), as well as the corresponding error message.
-        BOOST_LOG_TRIVIAL(error) << "Caught error: addr, err, msg: \n" << theErr.TheAddr << theErr.ErrorCode << theErr.ErrorMsg;
+        // (defined by the mnErr class)
+        BOOST_LOG_TRIVIAL(error) << "MotorAPI() constructor | addr: " << theErr.TheAddr << " | err: " << theErr.ErrorCode << " | msg: " << theErr.ErrorMsg;
     }
 }
 
 MotorAPI::~MotorAPI(void){
-    BOOST_LOG_TRIVIAL(info) << "Disabling nodes, and closing port";
+    BOOST_LOG_TRIVIAL(debug) << "Teknic Shutting down. Disabling nodes, and closing port";
     for (size_t i = 0; i < m_portCount; i++) {
             IPort &myPort = mgr->Ports(i);
         for (size_t nodeIndex = 0; nodeIndex < m_nodeCount; nodeIndex++) {
@@ -144,29 +146,38 @@ MotorAPI::~MotorAPI(void){
         }
     }
     mgr->PortsClose();
+    BOOST_LOG_TRIVIAL(debug) << "Teknic Shutdown!";
 }
 
 void MotorAPI::moveNode(INode &node) {
     constexpr auto moveCounts = 10000;
     node.Motion.MoveWentDone();                      //Clear the rising edge Move done register
     node.Port.BrakeControl.BrakeSetting(0, BRAKE_ALLOW_MOTION);
+    node.Port.BrakeControl.BrakeSetting(1, BRAKE_ALLOW_MOTION);
     node.AccUnit(INode::RPM_PER_SEC);                //Set the units for Acceleration to RPM/SEC
     node.VelUnit(INode::RPM);                        //Set the units for Velocity to RPM
     node.Motion.AccLimit = 100000;      // Set Acceleration Limit (RPM/Sec)
     node.Motion.VelLimit = 700;              //Set Velocity Limit (RPM)
 
-    BOOST_LOG_TRIVIAL(info) << "Moving Node";
-    node.Motion.MovePosnStart(moveCounts);
-    auto moveTime = node.Motion.MovePosnDurationMsec(moveCounts);
-    BOOST_LOG_TRIVIAL(debug) << "Estimated time: " << moveTime;
-    double timeout = mgr->TimeStampMsec() + moveTime + 100;         //define a timeout in case the node is unable to enable
+    try {
+        node.Motion.MovePosnStart(moveCounts);
+        BOOST_LOG_TRIVIAL(info) << "Moving Node " << node.Info.UserID.Value() << " moveCounts " << moveCounts;
+        auto moveTime = node.Motion.MovePosnDurationMsec(moveCounts, true);
+        BOOST_LOG_TRIVIAL(debug) << "Estimated move duration (abs): " << moveTime << "ms";
+        double timeout = mgr->TimeStampMsec() + moveTime + 500;         //define a timeout in case the node is unable to enable
 
-    while (!node.Motion.MoveIsDone()) {
-        if (mgr->TimeStampMsec() > timeout) {
-            BOOST_LOG_TRIVIAL(error) << "Timed out waiting for move to complete";
+        while (!node.Motion.MoveIsDone()) {
+            // wait here for move
+            if (mgr->TimeStampMsec() > timeout) {
+                BOOST_LOG_TRIVIAL(error) << "Timed out waiting for move to complete";
+            }
         }
+        BOOST_LOG_TRIVIAL(info) << "Move Done for " << node.Info.UserID.Value();
+    } catch (mnErr& theErr) {
+        // (defined by the mnErr class)
+        // sFnd::_mnErr::ErrorMsg
+        BOOST_LOG_TRIVIAL(error) << "moveNode() | addr: " << theErr.TheAddr << " | err: " << theErr.ErrorCode << " | msg: " << theErr.ErrorMsg;
     }
-    BOOST_LOG_TRIVIAL(info) << "Node Move Done";
 }
 
 
@@ -178,6 +189,7 @@ int main(int argc, char* argv[]) {
     for (size_t i = 0; i < 5; i++) {
         for (size_t nodeIndex = 0; nodeIndex < mapi.m_nodeCount; nodeIndex++) {
             mapi.moveNode(mapi.m_nodes[nodeIndex].get());
+            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
         } // for each node
     } // for each move
     return 0;
