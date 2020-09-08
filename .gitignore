@@ -2,3 +2,4 @@ build
 __pycache__
 controlClient.log
 controlServer.log
+.vscode
