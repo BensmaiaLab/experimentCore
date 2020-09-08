@@ -1,0 +1,6 @@
+sdk
+.vscode
+.vs
+build
+CMakeFiles
+bin
