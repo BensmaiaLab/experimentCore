@@ -8,6 +8,11 @@ class MotorAPI {
     private:
         sFnd::SysManager *mgr;
 
+        long MotorAPI::convertPositionToCount(long posInMM);
+        long MotorAPI::convertSpeedLevelToRPM(long level);
+        long MotorAPI::convertAccLevelToRPMperSecs(long level);
+        double getTimeout();
+
     public:
         size_t m_portCount = 0;
         std::vector<std::reference_wrapper<IPort>> m_ports;
@@ -18,7 +23,6 @@ class MotorAPI {
         MotorAPI();
         ~MotorAPI();
 
-        double getTimeout();
         void enableNode(INode &node);
         void homeNode(INode &node);
         void printNodeDetails(INode &node);
