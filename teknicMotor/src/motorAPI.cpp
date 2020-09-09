@@ -18,46 +18,47 @@
 
 using namespace sFnd;
 
-
-// Arbitrary 1-10 scaling factor.
-#define MIN_ACC_LEVEL 1
-#define MAX_ACC_LEVEL 10
-
-#define MIN_SPEED_LEVEL 1
-#define MAX_SPEED_LEVEL 10
+//! These defines only work for the one axis. Need to define these PER AXIS
+#define HOMING_TIMEOUT		    10000	//The timeout used for homing (ms)
+#define CONVERSION_ERROR  -1
 
 // defines the length of the linear rail for first axis, 24cm
-#define MIN_POSITION 0.1
+#define MIN_POSITION 0.1  // in mm
 #define MAX_POSITION 240
-#define MAX_DISTANCE_CNTS		-105000	// --->toward chair direction
-#define MAX_ACC_LIM_RPM_PER_SEC	4000
-#define MAX_VEL_LIM_RPM			700
+#define MAX_DISTANCE_CNTS		-105000	// --->toward chair direction, assume 0 is home
 
-#define HOMING_TIMEOUT		    10000	//The timeout used for homing (ms)
-
-#define CONVERSION_ERROR -1
-
-
-
+/* Convert from mm of travel to encoder counts. Must be established by measuring travel */
 long MotorAPI::convertPositionToCount(long posInMM) {
 	if ((posInMM < MIN_POSITION) || (posInMM > MAX_POSITION)) return CONVERSION_ERROR;
 	return posInMM * MAX_DISTANCE_CNTS / MAX_POSITION;
 }
 
+
+// Arbitrary 1-10 scaling factor.
+#define MIN_ACC_LEVEL   1
+#define MAX_ACC_LEVEL   10
+#define MAX_ACC_LIM_RPM	4000
+
+/* Convert 1-10 to servo's accel limit in RPM per sec */
 long MotorAPI::convertSpeedLevelToRPM(long level) {
 	if ((level < MIN_ACC_LEVEL) || (level > MAX_ACC_LEVEL)) return CONVERSION_ERROR;
-	return level * MAX_ACC_LIM_RPM_PER_SEC / MAX_ACC_LEVEL;
+	return level * MAX_ACC_LIM_RPM / MAX_ACC_LEVEL;
 }
 
+
+#define MIN_SPEED_LEVEL  1
+#define MAX_SPEED_LEVEL  10
+#define MAX_VEL_LIM_RPM	 700
+
+/* Convert 1-10 to servo's velocity limit in RPM per sec */
 long MotorAPI::convertAccLevelToRPMperSecs(long level) {
 	if ((level < MIN_SPEED_LEVEL) || (level > MAX_SPEED_LEVEL)) return CONVERSION_ERROR;
 	return level * MAX_VEL_LIM_RPM / MAX_SPEED_LEVEL;
 }
 
 
-
 // The timeout used for homing and move operations (in ms)
-double MotorAPI::getTimeout(){ return mgr->TimeStampMsec() + 10000; }
+double MotorAPI::getTimeout(){ return mgr->TimeStampMsec() + HOMING_TIMEOUT; }
 
 
 /* The following statements will attempt to enable the node. First, any
@@ -79,7 +80,6 @@ void MotorAPI::enableNode(INode &node) {
     }
     BOOST_LOG_TRIVIAL(info) << "Node enabled: " << node.Info.UserID.Value();
 }
-
 
 
 /* Find home position of the node. */
@@ -119,8 +119,8 @@ void MotorAPI::printNodeDetails(INode &node) {
 
 
 /**
- * Figure out how many SC4-HUBs are daisy chained, and how many motors
- * are plugged into them. Register them to the SysManager.
+ * Figure out how many SC4-HUBs are daisy chained (3 per port), and how many
+ * servo motors (nodes) are plugged into them. Register them to the SysManager.
  * 
  * By default, will try to load config file for each motor. Will enable
  * and home all nodes.
@@ -149,11 +149,17 @@ MotorAPI::MotorAPI(void) {
             m_ports.push_back(std::reference_wrapper<IPort>(mgr->Ports(i)));
 
         // Initialize nodes. Have to iterate ports, then nodes per port
+        //? I only expect one port currently, but this is for safety.
         size_t nodesOnThisPort;
         BOOST_LOG_TRIVIAL(debug) << "Iterating through " << m_portCount << " nodes.";
         for (size_t i = 0; i < m_portCount; i++) { // For each port:
             BOOST_LOG_TRIVIAL(debug) << "Iterating nodes on port " << i << ".";
             IPort &myPort = m_ports[i].get();
+
+            // Turn off all motors when we initialize the interfaces.
+            myPort.BrakeControl.BrakeSetting(0, BRAKE_ALLOW_MOTION);
+            myPort.BrakeControl.BrakeSetting(1, BRAKE_ALLOW_MOTION);
+
             nodesOnThisPort = myPort.NodeCount();
             m_nodeCount += nodesOnThisPort;
             BOOST_LOG_TRIVIAL(debug) << "Port,State,Node#: " << myPort.NetNumber() << myPort.OpenState() << nodesOnThisPort;
@@ -189,23 +195,30 @@ MotorAPI::~MotorAPI(void){
     BOOST_LOG_TRIVIAL(debug) << "Teknic Shutdown!";
 }
 
-void MotorAPI::moveNode(INode &node) {
-    constexpr auto moveCounts = 10000;
-    node.Motion.MoveWentDone();                      //Clear the rising edge Move done register
-    node.Port.BrakeControl.BrakeSetting(0, BRAKE_ALLOW_MOTION);
-    node.Port.BrakeControl.BrakeSetting(1, BRAKE_ALLOW_MOTION);
-    node.AccUnit(INode::RPM_PER_SEC);                //Set the units for Acceleration to RPM/SEC
-    node.VelUnit(INode::RPM);                        //Set the units for Velocity to RPM
-    node.Motion.AccLimit = 100000;      // Set Acceleration Limit (RPM/Sec)
-    node.Motion.VelLimit = 700;              //Set Velocity Limit (RPM)
+
+/* Generic move function built off examples. */
+void MotorAPI::move(
+    INode &node,
+    const int &moveCounts = 1000,
+    const int &speed = MAX_VEL_LIM_RPM,
+    const int &accel = MAX_ACC_LIM_RPM
+) {
+    node.Motion.MoveWentDone();        // Clear "move done" register
+    
+    node.VelUnit(INode::RPM);
+    node.Motion.VelLimit = speed;
+
+    node.AccUnit(INode::RPM_PER_SEC);
+    node.Motion.AccLimit = accel;
 
     try {
         node.Motion.MovePosnStart(moveCounts);
         BOOST_LOG_TRIVIAL(info) << "Moving Node " << node.Info.UserID.Value() << " moveCounts " << moveCounts;
+        
         auto moveTime = node.Motion.MovePosnDurationMsec(moveCounts, true);
         BOOST_LOG_TRIVIAL(debug) << "Estimated move duration (abs): " << moveTime << "ms";
-        double timeout = mgr->TimeStampMsec() + moveTime + 500;         //define a timeout in case the node is unable to enable
-
+        
+        double timeout = getTimeout() + moveTime;
         while (!node.Motion.MoveIsDone()) {
             // wait here for move
             if (mgr->TimeStampMsec() > timeout) {
@@ -221,6 +234,15 @@ void MotorAPI::moveNode(INode &node) {
 }
 
 
+/* High level move function built to convert from human units to machine. */
+void MotorAPI::moveNode(
+    INode &node,
+    const int &position,
+    const int &speed = MAX_VEL_LIM_RPM,
+    const int &accel = MAX_ACC_LIM_RPM
+) {
+
+}
 
 
 
@@ -229,10 +251,12 @@ int main(int argc, char* argv[]) {
 
     BOOST_LOG_TRIVIAL(info) << "Starting Teknic motor interface. Enumerating devices:";
     MotorAPI mapi;
+    int moveCounts = 1000;
+
     //At this point we will execute 5 rev moves sequentially on each axis
     for (size_t i = 0; i < 5; i++) {
         for (size_t nodeIndex = 0; nodeIndex < mapi.m_nodeCount; nodeIndex++) {
-            mapi.moveNode(mapi.m_nodes[nodeIndex].get());
+            mapi.moveNode(mapi.m_nodes[nodeIndex].get(), moveCounts);
             std::this_thread::sleep_for(std::chrono::milliseconds(1000));
         } // for each node
     } // for each move

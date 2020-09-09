@@ -26,5 +26,7 @@ class MotorAPI {
         void enableNode(INode &node);
         void homeNode(INode &node);
         void printNodeDetails(INode &node);
-        void moveNode(INode &node);
+        void move(INode &node, const int &moveCounts, const int &speed, const int &accel);
+        
+        void moveNode(INode &node, const int &position, const int &speed, const int &accel);
 };
