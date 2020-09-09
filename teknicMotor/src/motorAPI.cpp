@@ -150,7 +150,6 @@ MotorAPI::MotorAPI(void) {
 
         // Initialize nodes. Have to iterate ports, then nodes per port
         //? I only expect one port currently, but this is for safety.
-        size_t nodesOnThisPort;
         BOOST_LOG_TRIVIAL(debug) << "Iterating through " << m_portCount << " nodes.";
         for (size_t i = 0; i < m_portCount; i++) { // For each port:
             BOOST_LOG_TRIVIAL(debug) << "Iterating nodes on port " << i << ".";
