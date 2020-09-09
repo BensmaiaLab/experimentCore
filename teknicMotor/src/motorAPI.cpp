@@ -40,7 +40,7 @@ long MotorAPI::convertPositionToCount(long posInMM) {
 #define MAX_ACC_LIM_RPM	4000
 
 /* Convert 1-10 to servo's accel limit in RPM per sec */
-long MotorAPI::convertSpeedLevelToRPM(long level) {
+long MotorAPI::convertVelToRPM(long level) {
 	if ((level < MIN_ACC_LEVEL) || (level > MAX_ACC_LEVEL)) return CONVERSION_ERROR;
 	return level * MAX_ACC_LIM_RPM / MAX_ACC_LEVEL;
 }
@@ -51,7 +51,7 @@ long MotorAPI::convertSpeedLevelToRPM(long level) {
 #define MAX_VEL_LIM_RPM	 700
 
 /* Convert 1-10 to servo's velocity limit in RPM per sec */
-long MotorAPI::convertAccLevelToRPMperSecs(long level) {
+long MotorAPI::convertAccToRPM(long level) {
 	if ((level < MIN_SPEED_LEVEL) || (level > MAX_SPEED_LEVEL)) return CONVERSION_ERROR;
 	return level * MAX_VEL_LIM_RPM / MAX_SPEED_LEVEL;
 }
@@ -119,13 +119,14 @@ void MotorAPI::printNodeDetails(INode &node) {
 
 
 /**
- * Figure out how many SC4-HUBs are daisy chained (3 per port), and how many
+ * Figure out how many SC4-HUBs are daisy chained ([0-2] per port), and how many
  * servo motors (nodes) are plugged into them. Register them to the SysManager.
  * 
- * By default, will try to load config file for each motor. Will enable
- * and home all nodes.
- * ? seems to associate COM ports with SC HUB ports
- * COM portnum (as seen in device manager)
+ * Ports are literal COM serial ports, COM6 by default on ours.
+ * 
+ * Will enable and home all nodes.
+ * 
+ * (can try to load config file for each motor.)
  */
 MotorAPI::MotorAPI(void) {
     // The example just declares it default, says it's singleton
@@ -236,11 +237,15 @@ void MotorAPI::move(
 /* High level move function built to convert from human units to machine. */
 void MotorAPI::moveNode(
     INode &node,
-    const int &position,
-    const int &speed = MAX_VEL_LIM_RPM,
-    const int &accel = MAX_ACC_LIM_RPM
+    const int &position,  // in mm
+    const int &velLevel = 10,
+    const int &accLevel = 10
 ) {
+	auto newPosCount = convertPositionToCount(position);
+	auto speed = convertVelToRPM(velLevel);
+	auto acceleration = convertAccToRPM(accLevel);
 
+    move(node, newPosCount, speed, acceleration);
 }
 
 
@@ -252,12 +257,10 @@ int main(int argc, char* argv[]) {
     MotorAPI mapi;
     int moveCounts = 1000;
 
-    //At this point we will execute 5 rev moves sequentially on each axis
-    for (size_t i = 0; i < 5; i++) {
-        for (size_t nodeIndex = 0; nodeIndex < mapi.m_nodeCount; nodeIndex++) {
-            mapi.moveNode(mapi.m_nodes[nodeIndex].get(), moveCounts);
-            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-        } // for each node
-    } // for each move
+
+    for (size_t nodeIndex = 0; nodeIndex < mapi.m_nodeCount; nodeIndex++) {
+        mapi.moveNode(mapi.m_nodes[nodeIndex].get(), moveCounts);
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    } // for each node
     return 0;
 }

@@ -9,8 +9,8 @@ class MotorAPI {
         sFnd::SysManager *m_manager;
 
         long MotorAPI::convertPositionToCount(long posInMM);
-        long MotorAPI::convertSpeedLevelToRPM(long level);
-        long MotorAPI::convertAccLevelToRPMperSecs(long level);
+        long MotorAPI::convertVelToRPM(long level);
+        long MotorAPI::convertAccToRPM(long level);
         double getTimeout();
 
     public:
