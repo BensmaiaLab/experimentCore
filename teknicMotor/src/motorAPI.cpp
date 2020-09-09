@@ -18,6 +18,48 @@
 
 using namespace sFnd;
 
+
+// Arbitrary 1-10 scaling factor.
+#define MIN_ACC_LEVEL 1
+#define MAX_ACC_LEVEL 10
+
+#define MIN_SPEED_LEVEL 1
+#define MAX_SPEED_LEVEL 10
+
+// defines the length of the linear rail for first axis, 24cm
+#define MIN_POSITION 0.1
+#define MAX_POSITION 240
+#define MAX_DISTANCE_CNTS		-105000	// --->toward chair direction
+#define MAX_ACC_LIM_RPM_PER_SEC	4000
+#define MAX_VEL_LIM_RPM			700
+
+#define HOMING_TIMEOUT		    10000	//The timeout used for homing (ms)
+
+#define CONVERSION_ERROR -1
+
+
+
+long MotorAPI::convertPositionToCount(long posInMM) {
+	if ((posInMM < MIN_POSITION) || (posInMM > MAX_POSITION)) return CONVERSION_ERROR;
+	return posInMM * MAX_DISTANCE_CNTS / MAX_POSITION;
+}
+
+long MotorAPI::convertSpeedLevelToRPM(long level) {
+	if ((level < MIN_ACC_LEVEL) || (level > MAX_ACC_LEVEL)) return CONVERSION_ERROR;
+	return level * MAX_ACC_LIM_RPM_PER_SEC / MAX_ACC_LEVEL;
+}
+
+long MotorAPI::convertAccLevelToRPMperSecs(long level) {
+	if ((level < MIN_SPEED_LEVEL) || (level > MAX_SPEED_LEVEL)) return CONVERSION_ERROR;
+	return level * MAX_VEL_LIM_RPM / MAX_SPEED_LEVEL;
+}
+
+
+
+// The timeout used for homing and move operations (in ms)
+double MotorAPI::getTimeout(){ return mgr->TimeStampMsec() + 10000; }
+
+
 /* The following statements will attempt to enable the node. First, any
 shutdowns or NodeStops are cleared, finally the node is enabled */
 //! I don't like that this synchronously locks on that while loop
@@ -38,9 +80,7 @@ void MotorAPI::enableNode(INode &node) {
     BOOST_LOG_TRIVIAL(info) << "Node enabled: " << node.Info.UserID.Value();
 }
 
-double MotorAPI::getTimeout(){
-    return mgr->TimeStampMsec() + 10000; //The timeout used for homing (in ms)
-}
+
 
 /* Find home position of the node. */
 void MotorAPI::homeNode(INode &node){
@@ -179,6 +219,10 @@ void MotorAPI::moveNode(INode &node) {
         BOOST_LOG_TRIVIAL(error) << "moveNode() | addr: " << theErr.TheAddr << " | err: " << theErr.ErrorCode << " | msg: " << theErr.ErrorMsg;
     }
 }
+
+
+
+
 
 
 int main(int argc, char* argv[]) {
