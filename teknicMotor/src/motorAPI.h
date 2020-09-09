@@ -1,7 +1,8 @@
 #include <vector>
 #include <sstream>
+#include <boost/log/trivial.hpp>
 #include <pubSysCls.h>
-#include <node.h>
+#include "node.h"
 
 using namespace sFnd;
 

@@ -6,7 +6,7 @@
     reference to SystemManager INode
 */
 Node::Node(INode &node) {
-    INode m_node = node;
+    INode & m_node = node;
 
     // Following 3 are optional if I wish to load a config file:
     // thisNode.EnableReq(false); // Should disable Node before loading config
@@ -20,6 +20,71 @@ Node::Node(INode &node) {
 Node::~Node(void) {
     m_node.EnableReq(false);
 }
+
+
+
+/* The following statements will attempt to enable the node. First, any
+shutdowns or NodeStops are cleared, finally the node is enabled */
+//! I don't like that this synchronously locks on that while loop
+void Node::enable() {
+    m_node.Status.AlertsClear();
+    m_node.Motion.NodeStopClear();
+    m_node.EnableReq(true);
+
+    //define a timeout in case the node is unable to enable
+    double timeout = m_manager->getTimeout();
+    //This will loop checking on the Real time values of the node's Ready status
+    while (!m_node.Motion.IsReady()) {
+        if (m_manager->TimeStampMsec() > timeout) {
+            BOOST_LOG_TRIVIAL(error) << "Error: Timed out waiting for Node " << m_node.Info.UserID.Value() << " to enable";
+            return;
+        }
+    }
+    BOOST_LOG_TRIVIAL(info) << "Node enabled: " << m_node.Info.UserID.Value();
+}
+
+
+void Node::disable() {
+    m_node.EnableReq(false);
+}
+
+
+/* Find home position of the node. */
+void Node::home(){
+    if (m_node.Motion.Homing.HomingValid()) {
+        if (m_node.Motion.Homing.WasHomed()) {
+            BOOST_LOG_TRIVIAL(debug) << "Node has already been homed, current position is: \t" << m_node.Motion.PosnMeasured.Value();
+        } else {
+            BOOST_LOG_TRIVIAL(debug) << "Node has not been homed.";
+        }
+        BOOST_LOG_TRIVIAL(info) << "Homing Node now...";
+        m_node.Motion.Homing.Initiate();
+
+        double timeout = getTimeout();    //define a timeout in case the node is unable to enable
+        while (!m_node.Motion.Homing.WasHomed()) {
+            if (m_manager->TimeStampMsec() > timeout) {
+                BOOST_LOG_TRIVIAL(error) << "Node did not complete homing:  \n\t -Ensure Homing settings have been defined through ClearView. \n\t -Check for alerts/Shutdowns \n\t -Ensure timeout is longer than the longest possible homing move.";
+            }
+        }
+        BOOST_LOG_TRIVIAL(info) << "Node completed homing.";
+    } else {
+        BOOST_LOG_TRIVIAL(warning) << "Homing never setup through ClearView. The node cannot be homed: " << m_node.Info.UserID.Value();
+    }
+}
+
+
+/* Diagnostics print. */
+void Node::printDetails() {
+    std::string nType = "CLEARPATH_SC";
+    if ( m_node.Info.NodeType() == 3) nType = "CLEARPATH_SC_ADV";
+    
+    BOOST_LOG_TRIVIAL(info) << "  NodeType: " <<  nType;
+    BOOST_LOG_TRIVIAL(info) << "     Model: " <<  m_node.Info.Model.Value();
+    BOOST_LOG_TRIVIAL(info) << "  Serial #: " <<  std::to_string(m_node.Info.SerialNumber.Value()).c_str();
+    BOOST_LOG_TRIVIAL(info) << "FW version: " <<  m_node.Info.FirmwareVersion.Value();
+    BOOST_LOG_TRIVIAL(info) << "    userID: " <<  m_node.Info.UserID.Value();
+}
+
 
 
 
@@ -59,70 +124,6 @@ long Node::convertAccToRPM(long level) {
 	if ((level < MIN_SPEED_LEVEL) || (level > MAX_SPEED_LEVEL)) return CONVERSION_ERROR;
 	return level * MAX_VEL_LIM_RPM / MAX_SPEED_LEVEL;
 }
-
-
-
-
-/* The following statements will attempt to enable the node. First, any
-shutdowns or NodeStops are cleared, finally the node is enabled */
-//! I don't like that this synchronously locks on that while loop
-void Node::enable() {
-    m_node.Status.AlertsClear();
-    m_node.Motion.NodeStopClear();
-    m_node.EnableReq(true);
-
-    //define a timeout in case the node is unable to enable
-    double timeout = m_manager->getTimeout();
-    //This will loop checking on the Real time values of the node's Ready status
-    while (!m_node.Motion.IsReady()) {
-        if (m_manager->TimeStampMsec() > timeout) {
-            BOOST_LOG_TRIVIAL(error) << "Error: Timed out waiting for Node " << m_node.Info.UserID.Value() << " to enable";
-            return;
-        }
-    }
-    BOOST_LOG_TRIVIAL(info) << "Node enabled: " << m_node.Info.UserID.Value();
-}
-
-void Node::disable() {
-    m_node.EnableReq(false);
-}
-
-
-/* Find home position of the node. */
-void Node::home(){
-    if (m_node.Motion.Homing.HomingValid()) {
-        if (m_node.Motion.Homing.WasHomed()) {
-            BOOST_LOG_TRIVIAL(debug) << "Node has already been homed, current position is: \t" << m_node.Motion.PosnMeasured.Value();
-        } else {
-            BOOST_LOG_TRIVIAL(debug) << "Node has not been homed.";
-        }
-        BOOST_LOG_TRIVIAL(info) << "Homing Node now...";
-        m_node.Motion.Homing.Initiate();
-
-        double timeout = getTimeout();    //define a timeout in case the node is unable to enable
-        while (!m_node.Motion.Homing.WasHomed()) {
-            if (m_manager->TimeStampMsec() > timeout) {
-                BOOST_LOG_TRIVIAL(error) << "Node did not complete homing:  \n\t -Ensure Homing settings have been defined through ClearView. \n\t -Check for alerts/Shutdowns \n\t -Ensure timeout is longer than the longest possible homing move.";
-            }
-        }
-        BOOST_LOG_TRIVIAL(info) << "Node completed homing.";
-    } else {
-        BOOST_LOG_TRIVIAL(warning) << "Homing never setup through ClearView. The node cannot be homed: " << m_node.Info.UserID.Value();
-    }
-}
-
-/* Diagnostics print. */
-void Node::printDetails() {
-    std::string nType = "CLEARPATH_SC";
-    if ( m_node.Info.NodeType() == 3) nType = "CLEARPATH_SC_ADV";
-    
-    BOOST_LOG_TRIVIAL(info) << "  NodeType: " <<  nType;
-    BOOST_LOG_TRIVIAL(info) << "     Model: " <<  m_node.Info.Model.Value();
-    BOOST_LOG_TRIVIAL(info) << "  Serial #: " <<  std::to_string(m_node.Info.SerialNumber.Value()).c_str();
-    BOOST_LOG_TRIVIAL(info) << "FW version: " <<  m_node.Info.FirmwareVersion.Value();
-    BOOST_LOG_TRIVIAL(info) << "    userID: " <<  m_node.Info.UserID.Value();
-}
-
 
 
 /* Generic move function built off examples. */

@@ -7,9 +7,7 @@
  * Contact: dmacd@uchicago.edu
  */
 
-#include <boost/log/trivial.hpp>
-#include <chrono>
-#include <thread>
+
 #include "motorAPI.h"
 
 

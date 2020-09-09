@@ -23,7 +23,7 @@ public:
     Node(INode &node);
     ~Node(void);
     void move(const int &moveCounts, const int &speed, const int &accel);
-    void moveNode(const int &position, const int &speed, const int &accel);
+    void moveHigh(const int &position, const int &velLevel, const int &accLevel);
 
 
 }
