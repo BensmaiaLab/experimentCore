@@ -6,7 +6,7 @@ using namespace sFnd;
 
 class MotorAPI {
     private:
-        sFnd::SysManager *mgr;
+        sFnd::SysManager *m_manager;
 
         long MotorAPI::convertPositionToCount(long posInMM);
         long MotorAPI::convertSpeedLevelToRPM(long level);
@@ -27,6 +27,6 @@ class MotorAPI {
         void homeNode(INode &node);
         void printNodeDetails(INode &node);
         void move(INode &node, const int &moveCounts, const int &speed, const int &accel);
-        
+
         void moveNode(INode &node, const int &position, const int &speed, const int &accel);
 };

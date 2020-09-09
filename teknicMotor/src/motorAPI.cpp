@@ -58,7 +58,7 @@ long MotorAPI::convertAccLevelToRPMperSecs(long level) {
 
 
 // The timeout used for homing and move operations (in ms)
-double MotorAPI::getTimeout(){ return mgr->TimeStampMsec() + HOMING_TIMEOUT; }
+double MotorAPI::getTimeout(){ return m_manager->TimeStampMsec() + HOMING_TIMEOUT; }
 
 
 /* The following statements will attempt to enable the node. First, any
@@ -73,7 +73,7 @@ void MotorAPI::enableNode(INode &node) {
     double timeout = getTimeout();
     //This will loop checking on the Real time values of the node's Ready status
     while (!node.Motion.IsReady()) {
-        if (mgr->TimeStampMsec() > timeout) {
+        if (m_manager->TimeStampMsec() > timeout) {
             BOOST_LOG_TRIVIAL(error) << "Error: Timed out waiting for Node " << node.Info.UserID.Value() << " to enable";
             return;
         }
@@ -95,7 +95,7 @@ void MotorAPI::homeNode(INode &node){
 
         double timeout = getTimeout();    //define a timeout in case the node is unable to enable
         while (!node.Motion.Homing.WasHomed()) {
-            if (mgr->TimeStampMsec() > timeout) {
+            if (m_manager->TimeStampMsec() > timeout) {
                 BOOST_LOG_TRIVIAL(error) << "Node did not complete homing:  \n\t -Ensure Homing settings have been defined through ClearView. \n\t -Check for alerts/Shutdowns \n\t -Ensure timeout is longer than the longest possible homing move.";
             }
         }
@@ -129,24 +129,23 @@ void MotorAPI::printNodeDetails(INode &node) {
  */
 MotorAPI::MotorAPI(void) {
     // The example just declares it default, says it's singleton
-    // SysManager mgr;
     std::vector<std::string> comHubPorts;
 
     // But this doesn't show static analysis errors...
-    SysManager *mgr = SysManager::Instance();
+    SysManager *m_manager = SysManager::Instance();
 
     try {
         SysManager::FindComHubPorts(comHubPorts);
         m_portCount = comHubPorts.size();
         BOOST_LOG_TRIVIAL(info) << "Found " << m_portCount << " SC Hubs";
         for (size_t i = 0; i < m_portCount && i < NET_CONTROLLER_MAX; i++)
-            mgr->ComHubPort(i, comHubPorts[i].c_str());
+            m_manager->ComHubPort(i, comHubPorts[i].c_str());
         
-        mgr->PortsOpen(m_portCount);
+        m_manager->PortsOpen(m_portCount);
 
         // Drop all of our port references into my own array
         for (size_t i = 0; i < m_portCount; i++)
-            m_ports.push_back(std::reference_wrapper<IPort>(mgr->Ports(i)));
+            m_ports.push_back(std::reference_wrapper<IPort>(m_manager->Ports(i)));
 
         // Initialize nodes. Have to iterate ports, then nodes per port
         //? I only expect one port currently, but this is for safety.
@@ -154,26 +153,26 @@ MotorAPI::MotorAPI(void) {
         BOOST_LOG_TRIVIAL(debug) << "Iterating through " << m_portCount << " nodes.";
         for (size_t i = 0; i < m_portCount; i++) { // For each port:
             BOOST_LOG_TRIVIAL(debug) << "Iterating nodes on port " << i << ".";
-            IPort &myPort = m_ports[i].get();
+            IPort &thisPort = m_ports[i].get();
 
             // Turn off all motors when we initialize the interfaces.
-            myPort.BrakeControl.BrakeSetting(0, BRAKE_ALLOW_MOTION);
-            myPort.BrakeControl.BrakeSetting(1, BRAKE_ALLOW_MOTION);
+            thisPort.BrakeControl.BrakeSetting(0, BRAKE_ALLOW_MOTION);
+            thisPort.BrakeControl.BrakeSetting(1, BRAKE_ALLOW_MOTION);
 
-            nodesOnThisPort = myPort.NodeCount();
-            m_nodeCount += nodesOnThisPort;
-            BOOST_LOG_TRIVIAL(debug) << "Port,State,Node#: " << myPort.NetNumber() << myPort.OpenState() << nodesOnThisPort;
+            auto nodeCntOnPort = thisPort.NodeCount();
+            m_nodeCount += nodeCntOnPort;
+            BOOST_LOG_TRIVIAL(debug) << "Port,State,Node#: " << thisPort.NetNumber() << thisPort.OpenState() << nodeCntOnPort;
             // Iterate nodes on this port
-            for (size_t nodeIndex = 0; nodeIndex < nodesOnThisPort; nodeIndex++) {
-                INode &myNode = myPort.Nodes(nodeIndex);
-                myNode.EnableReq(false); // Should disable Node before loading config
-                mgr->Delay(200);     //? sleep (ms?) to make sure disable is registered?
-                //theNode.Setup.ConfigLoad("Config File path");
-                printNodeDetails(myNode);
-                enableNode(myNode);
-                homeNode(myNode);
-                // ports.push_back(std::make_unique<IPort>(mgr.Ports(i)));
-                m_nodes.push_back(std::reference_wrapper<INode>(myNode));  //! Now we have a reference
+            for (size_t nodeIndex = 0; nodeIndex < nodeCntOnPort; nodeIndex++) {
+                INode &thisNode = thisPort.Nodes(nodeIndex);
+                // Following 3 are optional if I wish to load a config file:
+                // thisNode.EnableReq(false); // Should disable Node before loading config
+                // m_manager->Delay(200);     //? sleep (ms?) to make sure disable is registered?
+                // theNode.Setup.ConfigLoad("Config File path");
+                printNodeDetails(thisNode);
+                enableNode(thisNode);
+                homeNode(thisNode);
+                m_nodes.push_back(std::reference_wrapper<INode>(thisNode));  //! Now we have a reference
             }
         }
         
@@ -186,12 +185,12 @@ MotorAPI::MotorAPI(void) {
 MotorAPI::~MotorAPI(void){
     BOOST_LOG_TRIVIAL(debug) << "Teknic Shutting down. Disabling nodes, and closing port";
     for (size_t i = 0; i < m_portCount; i++) {
-            IPort &myPort = mgr->Ports(i);
+            IPort &thisPort = m_manager->Ports(i);
         for (size_t nodeIndex = 0; nodeIndex < m_nodeCount; nodeIndex++) {
-            myPort.Nodes(nodeIndex).EnableReq(false);
+            thisPort.Nodes(nodeIndex).EnableReq(false);
         }
     }
-    mgr->PortsClose();
+    m_manager->PortsClose();
     BOOST_LOG_TRIVIAL(debug) << "Teknic Shutdown!";
 }
 
@@ -221,7 +220,7 @@ void MotorAPI::move(
         double timeout = getTimeout() + moveTime;
         while (!node.Motion.MoveIsDone()) {
             // wait here for move
-            if (mgr->TimeStampMsec() > timeout) {
+            if (m_manager->TimeStampMsec() > timeout) {
                 BOOST_LOG_TRIVIAL(error) << "Timed out waiting for move to complete";
             }
         }
