@@ -1,32 +1,23 @@
 #include <vector>
 #include <sstream>
 #include <pubSysCls.h>
+#include <node.h>
 
 using namespace sFnd;
 
 class MotorAPI {
-    private:
-        sFnd::SysManager *m_manager;
+private:
+    sFnd::SysManager *m_manager;
 
-        long MotorAPI::convertPositionToCount(long posInMM);
-        long MotorAPI::convertVelToRPM(long level);
-        long MotorAPI::convertAccToRPM(long level);
-        double getTimeout();
+public:
+    size_t m_portCount = 0;
+    std::vector<std::reference_wrapper<IPort>> m_ports;
 
-    public:
-        size_t m_portCount = 0;
-        std::vector<std::reference_wrapper<IPort>> m_ports;
+    size_t m_nodeCount = 0;
+    std::vector<std::reference_wrapper<Node>> m_nodes;
 
-        size_t m_nodeCount = 0;
-        std::vector<std::reference_wrapper<INode>> m_nodes;
-
-        MotorAPI();
-        ~MotorAPI();
-
-        void enableNode(INode &node);
-        void homeNode(INode &node);
-        void printNodeDetails(INode &node);
-        void move(INode &node, const int &moveCounts, const int &speed, const int &accel);
-
-        void moveNode(INode &node, const int &position, const int &speed, const int &accel);
+    MotorAPI();
+    ~MotorAPI();
+    double getTimeout();
+    
 };

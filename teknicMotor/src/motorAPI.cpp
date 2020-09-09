@@ -7,116 +7,13 @@
  * Contact: dmacd@uchicago.edu
  */
 
-#include <stdio.h>
-#include <iostream>
 #include <boost/log/trivial.hpp>
-#include <vector>
 #include <chrono>
 #include <thread>
 #include "motorAPI.h"
 
 
 using namespace sFnd;
-
-//! These defines only work for the one axis. Need to define these PER AXIS
-#define HOMING_TIMEOUT		    10000	//The timeout used for homing (ms)
-#define CONVERSION_ERROR  -1
-
-// defines the length of the linear rail for first axis, 24cm
-#define MIN_POSITION 0.1  // in mm
-#define MAX_POSITION 240
-#define MAX_DISTANCE_CNTS		-105000	// --->toward chair direction, assume 0 is home
-
-/* Convert from mm of travel to encoder counts. Must be established by measuring travel */
-long MotorAPI::convertPositionToCount(long posInMM) {
-	if ((posInMM < MIN_POSITION) || (posInMM > MAX_POSITION)) return CONVERSION_ERROR;
-	return posInMM * MAX_DISTANCE_CNTS / MAX_POSITION;
-}
-
-
-// Arbitrary 1-10 scaling factor.
-#define MIN_ACC_LEVEL   1
-#define MAX_ACC_LEVEL   10
-#define MAX_ACC_LIM_RPM	4000
-
-/* Convert 1-10 to servo's accel limit in RPM per sec */
-long MotorAPI::convertVelToRPM(long level) {
-	if ((level < MIN_ACC_LEVEL) || (level > MAX_ACC_LEVEL)) return CONVERSION_ERROR;
-	return level * MAX_ACC_LIM_RPM / MAX_ACC_LEVEL;
-}
-
-
-#define MIN_SPEED_LEVEL  1
-#define MAX_SPEED_LEVEL  10
-#define MAX_VEL_LIM_RPM	 700
-
-/* Convert 1-10 to servo's velocity limit in RPM per sec */
-long MotorAPI::convertAccToRPM(long level) {
-	if ((level < MIN_SPEED_LEVEL) || (level > MAX_SPEED_LEVEL)) return CONVERSION_ERROR;
-	return level * MAX_VEL_LIM_RPM / MAX_SPEED_LEVEL;
-}
-
-
-// The timeout used for homing and move operations (in ms)
-double MotorAPI::getTimeout(){ return m_manager->TimeStampMsec() + HOMING_TIMEOUT; }
-
-
-/* The following statements will attempt to enable the node. First, any
-shutdowns or NodeStops are cleared, finally the node is enabled */
-//! I don't like that this synchronously locks on that while loop
-void MotorAPI::enableNode(INode &node) {
-    node.Status.AlertsClear();
-    node.Motion.NodeStopClear();
-    node.EnableReq(true);
-
-    //define a timeout in case the node is unable to enable
-    double timeout = getTimeout();
-    //This will loop checking on the Real time values of the node's Ready status
-    while (!node.Motion.IsReady()) {
-        if (m_manager->TimeStampMsec() > timeout) {
-            BOOST_LOG_TRIVIAL(error) << "Error: Timed out waiting for Node " << node.Info.UserID.Value() << " to enable";
-            return;
-        }
-    }
-    BOOST_LOG_TRIVIAL(info) << "Node enabled: " << node.Info.UserID.Value();
-}
-
-
-/* Find home position of the node. */
-void MotorAPI::homeNode(INode &node){
-    if (node.Motion.Homing.HomingValid()) {
-        if (node.Motion.Homing.WasHomed()) {
-            BOOST_LOG_TRIVIAL(debug) << "Node has already been homed, current position is: \t" << node.Motion.PosnMeasured.Value();
-        } else {
-            BOOST_LOG_TRIVIAL(debug) << "Node has not been homed.";
-        }
-        BOOST_LOG_TRIVIAL(info) << "Homing Node now...";
-        node.Motion.Homing.Initiate();
-
-        double timeout = getTimeout();    //define a timeout in case the node is unable to enable
-        while (!node.Motion.Homing.WasHomed()) {
-            if (m_manager->TimeStampMsec() > timeout) {
-                BOOST_LOG_TRIVIAL(error) << "Node did not complete homing:  \n\t -Ensure Homing settings have been defined through ClearView. \n\t -Check for alerts/Shutdowns \n\t -Ensure timeout is longer than the longest possible homing move.";
-            }
-        }
-        BOOST_LOG_TRIVIAL(info) << "Node completed homing.";
-    } else {
-        BOOST_LOG_TRIVIAL(warning) << "Homing never setup through ClearView. The node cannot be homed: " << node.Info.UserID.Value();
-    }
-}
-
-/* Diagnostics print. */
-void MotorAPI::printNodeDetails(INode &node) {
-    std::string nType = "CLEARPATH_SC";
-    if ( node.Info.NodeType() == 3) nType = "CLEARPATH_SC_ADV";
-    
-    BOOST_LOG_TRIVIAL(info) << "  NodeType: " <<  nType;
-    BOOST_LOG_TRIVIAL(info) << "     Model: " <<  node.Info.Model.Value();
-    BOOST_LOG_TRIVIAL(info) << "  Serial #: " <<  std::to_string(node.Info.SerialNumber.Value()).c_str();
-    BOOST_LOG_TRIVIAL(info) << "FW version: " <<  node.Info.FirmwareVersion.Value();
-    BOOST_LOG_TRIVIAL(info) << "    userID: " <<  node.Info.UserID.Value();
-}
-
 
 /**
  * Figure out how many SC4-HUBs are daisy chained ([0-2] per port), and how many
@@ -164,15 +61,11 @@ MotorAPI::MotorAPI(void) {
             BOOST_LOG_TRIVIAL(debug) << "Port,State,Node#: " << thisPort.NetNumber() << thisPort.OpenState() << nodeCntOnPort;
             // Iterate nodes on this port
             for (size_t nodeIndex = 0; nodeIndex < nodeCntOnPort; nodeIndex++) {
-                INode &thisNode = thisPort.Nodes(nodeIndex);
-                // Following 3 are optional if I wish to load a config file:
-                // thisNode.EnableReq(false); // Should disable Node before loading config
-                // m_manager->Delay(200);     //? sleep (ms?) to make sure disable is registered?
-                // theNode.Setup.ConfigLoad("Config File path");
-                printNodeDetails(thisNode);
-                enableNode(thisNode);
-                homeNode(thisNode);
-                m_nodes.push_back(std::reference_wrapper<INode>(thisNode));  //! Now we have a reference
+                auto thisNode = thisPort.Nodes(nodeIndex);
+                thisNode.
+                Node wrappedNode = Node(self, thisNode);
+
+                m_nodes.push_back(std::reference_wrapper<Node>(wrappedNode));  //TODO: Push NodeWrapper here instead
             }
         }
         
@@ -184,82 +77,18 @@ MotorAPI::MotorAPI(void) {
 
 MotorAPI::~MotorAPI(void){
     BOOST_LOG_TRIVIAL(debug) << "Teknic Shutting down. Disabling nodes, and closing port";
-    for (size_t i = 0; i < m_portCount; i++) {
-            IPort &thisPort = m_manager->Ports(i);
-        for (size_t nodeIndex = 0; nodeIndex < m_nodeCount; nodeIndex++) {
-            thisPort.Nodes(nodeIndex).EnableReq(false);
-        }
+    for (size_t i = 0; i < m_nodeCount; i++) {
+        auto thisNode = m_nodes[i].get();
+        thisNode.disable();
     }
     m_manager->PortsClose();
     BOOST_LOG_TRIVIAL(debug) << "Teknic Shutdown!";
 }
 
 
-/* Generic move function built off examples. */
-void MotorAPI::move(
-    INode &node,
-    const int &moveCounts = 1000,
-    const int &speed = MAX_VEL_LIM_RPM,
-    const int &accel = MAX_ACC_LIM_RPM
-) {
-    node.Motion.MoveWentDone();        // Clear "move done" register
-    
-    node.VelUnit(INode::RPM);
-    node.Motion.VelLimit = speed;
-
-    node.AccUnit(INode::RPM_PER_SEC);
-    node.Motion.AccLimit = accel;
-
-    try {
-        node.Motion.MovePosnStart(moveCounts);
-        BOOST_LOG_TRIVIAL(info) << "Moving Node " << node.Info.UserID.Value() << " moveCounts " << moveCounts;
-        
-        auto moveTime = node.Motion.MovePosnDurationMsec(moveCounts, true);
-        BOOST_LOG_TRIVIAL(debug) << "Estimated move duration (abs): " << moveTime << "ms";
-        
-        double timeout = getTimeout() + moveTime;
-        while (!node.Motion.MoveIsDone()) {
-            // wait here for move
-            if (m_manager->TimeStampMsec() > timeout) {
-                BOOST_LOG_TRIVIAL(error) << "Timed out waiting for move to complete";
-            }
-        }
-        BOOST_LOG_TRIVIAL(info) << "Move Done for " << node.Info.UserID.Value();
-    } catch (mnErr& theErr) {
-        // (defined by the mnErr class)
-        // sFnd::_mnErr::ErrorMsg
-        BOOST_LOG_TRIVIAL(error) << "moveNode() | addr: " << theErr.TheAddr << " | err: " << theErr.ErrorCode << " | msg: " << theErr.ErrorMsg;
-    }
-}
-
-
-/* High level move function built to convert from human units to machine. */
-void MotorAPI::moveNode(
-    INode &node,
-    const int &position,  // in mm
-    const int &velLevel = 10,
-    const int &accLevel = 10
-) {
-	auto newPosCount = convertPositionToCount(position);
-	auto speed = convertVelToRPM(velLevel);
-	auto acceleration = convertAccToRPM(accLevel);
-
-    move(node, newPosCount, speed, acceleration);
-}
+#define HOMING_TIMEOUT		    10000	//The timeout used for homing (ms)
+// The timeout used for homing and move operations (in ms)
+double MotorAPI::getTimeout(){ return m_manager->TimeStampMsec() + HOMING_TIMEOUT; }
 
 
 
-
-int main(int argc, char* argv[]) {
-
-    BOOST_LOG_TRIVIAL(info) << "Starting Teknic motor interface. Enumerating devices:";
-    MotorAPI mapi;
-    int moveCounts = 1000;
-
-
-    for (size_t nodeIndex = 0; nodeIndex < mapi.m_nodeCount; nodeIndex++) {
-        mapi.moveNode(mapi.m_nodes[nodeIndex].get(), moveCounts);
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-    } // for each node
-    return 0;
-}
