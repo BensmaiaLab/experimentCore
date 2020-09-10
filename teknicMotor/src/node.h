@@ -1,3 +1,4 @@
+#include <boost/log/trivial.hpp>
 #include <pubSysCls.h>
 
 using namespace sFnd;

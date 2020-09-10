@@ -1,12 +1,15 @@
-#include <boost/log/trivial.hpp>
 #include "node.h"
+
+
+class MotorAPI;
 
 /* Requires I know:
     motorAPI
     reference to SystemManager INode
 */
-Node::Node(INode &node) {
+Node::Node(INode &node, MotorAPI &mapi) {
     INode & m_node = node;
+    MotorAPI & m_api = mapi;
 
     // Following 3 are optional if I wish to load a config file:
     // thisNode.EnableReq(false); // Should disable Node before loading config

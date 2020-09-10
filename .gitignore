@@ -1,5 +1,5 @@
 build
 __pycache__
+.vscode
 controlClient.log
 controlServer.log
-.vscode
