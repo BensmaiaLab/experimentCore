@@ -4,7 +4,6 @@ set(MAINTGT TeknicMotor) # set the project name
 set(CMAKE_BUILD_TYPE "Debug") 
 
 # VCpkg setup for WIN
-
 # set(VCPKG_TARGET_ARCHITECTURE x64) # 
 # set(VCPKG_CRT_LINKAGE dynamic)     # Cpp Runtime
 # set(VCPKG_LIBRARY_LINKAGE dynamic) # 
@@ -47,7 +46,7 @@ include_directories(
 )
 
 # add the executable
-add_executable(${MAINTGT} "${PROJECT_SOURCE_DIR}/src/motorAPI.cpp")
+add_executable(${MAINTGT} "${PROJECT_SOURCE_DIR}/src/main.cpp")
 
 target_link_libraries(${MAINTGT}
     debug "${sfoundationDir}/lib/debug/sFoundation20.lib"

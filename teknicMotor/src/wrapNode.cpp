@@ -1,15 +1,12 @@
-#include "node.h"
+#include "motorAPI.h"
 
 
-class MotorAPI;
-
-/* Requires I know:
-    motorAPI
-    reference to SystemManager INode
+/* Wrapper for interface
 */
-Node::Node(INode &node, MotorAPI &mapi) {
-    INode & m_node = node;
-    MotorAPI & m_api = mapi;
+Node::Node(sFnd::INode &node, MotorAPI *mapi):
+    m_node(node), m_api(mapi) {
+
+    //sFnd::SysManager *m_manager = mapi;
 
     // Following 3 are optional if I wish to load a config file:
     // thisNode.EnableReq(false); // Should disable Node before loading config
@@ -28,17 +25,17 @@ Node::~Node(void) {
 
 /* The following statements will attempt to enable the node. First, any
 shutdowns or NodeStops are cleared, finally the node is enabled */
-//! I don't like that this synchronously locks on that while loop
+
 void Node::enable() {
     m_node.Status.AlertsClear();
     m_node.Motion.NodeStopClear();
     m_node.EnableReq(true);
 
     //define a timeout in case the node is unable to enable
-    double timeout = m_manager->getTimeout();
+    double timeout = m_api->getTimeout();
     //This will loop checking on the Real time values of the node's Ready status
     while (!m_node.Motion.IsReady()) {
-        if (m_manager->TimeStampMsec() > timeout) {
+        if (m_api->TimeStampMsec() > timeout) {
             BOOST_LOG_TRIVIAL(error) << "Error: Timed out waiting for Node " << m_node.Info.UserID.Value() << " to enable";
             return;
         }
@@ -63,9 +60,9 @@ void Node::home(){
         BOOST_LOG_TRIVIAL(info) << "Homing Node now...";
         m_node.Motion.Homing.Initiate();
 
-        double timeout = getTimeout();    //define a timeout in case the node is unable to enable
+        double timeout = m_api->getTimeout();    //define a timeout in case the node is unable to enable
         while (!m_node.Motion.Homing.WasHomed()) {
-            if (m_manager->TimeStampMsec() > timeout) {
+            if (m_api->TimeStampMsec() > timeout) {
                 BOOST_LOG_TRIVIAL(error) << "Node did not complete homing:  \n\t -Ensure Homing settings have been defined through ClearView. \n\t -Check for alerts/Shutdowns \n\t -Ensure timeout is longer than the longest possible homing move.";
             }
         }
@@ -137,10 +134,10 @@ void Node::move(
 ) {
     m_node.Motion.MoveWentDone();        // Clear "move done" register
     
-    m_node.VelUnit(INode::RPM);
+    m_node.VelUnit(sFnd::INode::RPM);
     m_node.Motion.VelLimit = speed;
 
-    m_node.AccUnit(INode::RPM_PER_SEC);
+    m_node.AccUnit(sFnd::INode::RPM_PER_SEC);
     m_node.Motion.AccLimit = accel;
 
     try {
@@ -150,15 +147,15 @@ void Node::move(
         auto moveTime = m_node.Motion.MovePosnDurationMsec(moveCounts, true);
         BOOST_LOG_TRIVIAL(debug) << "Estimated move duration (abs): " << moveTime << "ms";
         
-        double timeout = getTimeout() + moveTime;
+        double timeout = m_api->getTimeout() + moveTime;
         while (!m_node.Motion.MoveIsDone()) {
             // wait here for move
-            if (m_manager->TimeStampMsec() > timeout) {
+            if (m_api->TimeStampMsec() > timeout) {
                 BOOST_LOG_TRIVIAL(error) << "Timed out waiting for move to complete";
             }
         }
         BOOST_LOG_TRIVIAL(info) << "Move Done for " << m_node.Info.UserID.Value();
-    } catch (mnErr& theErr) {
+    } catch (sFnd::mnErr& theErr) {
         // (defined by the mnErr class)
         // sFnd::_mnErr::ErrorMsg
         BOOST_LOG_TRIVIAL(error) << "moveNode() | addr: " << theErr.TheAddr << " | err: " << theErr.ErrorCode << " | msg: " << theErr.ErrorMsg;
@@ -169,8 +166,8 @@ void Node::move(
 /* High level move function built to convert from human units to machine. */
 void Node::moveHigh(
     const int &position,  // in mm
-    const int &velLevel = 10,
-    const int &accLevel = 10
+    const int &velLevel,
+    const int &accLevel
 ) {
     move(
         convertPositionToCount(position),

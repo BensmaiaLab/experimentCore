@@ -59,9 +59,7 @@ MotorAPI::MotorAPI(void) {
             BOOST_LOG_TRIVIAL(debug) << "Port,State,Node#: " << thisPort.NetNumber() << thisPort.OpenState() << nodeCntOnPort;
             // Iterate nodes on this port
             for (size_t nodeIndex = 0; nodeIndex < nodeCntOnPort; nodeIndex++) {
-                auto thisNode = thisPort.Nodes(nodeIndex);
-                thisNode.
-                Node wrappedNode = Node(self, thisNode);
+                Node wrappedNode = Node(thisPort.Nodes(nodeIndex), this);
 
                 m_nodes.push_back(std::reference_wrapper<Node>(wrappedNode));  //TODO: Push NodeWrapper here instead
             }
@@ -88,5 +86,5 @@ MotorAPI::~MotorAPI(void){
 // The timeout used for homing and move operations (in ms)
 double MotorAPI::getTimeout(){ return m_manager->TimeStampMsec() + HOMING_TIMEOUT; }
 
-
+double MotorAPI::TimeStampMsec() {return m_manager->TimeStampMsec();}
 

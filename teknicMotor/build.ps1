@@ -12,6 +12,7 @@ write-host -ForegroundColor Green "Building in: ${BuildPath}"
 # Hackish, but makes it work across systems. Add yours to array if necessary.
 # Uses whichever path it finds first that's valid.
 $vcpkgPaths = @(
+    "C:/opt/vcpkg",
     "C:/Users/Somlab/repos/vcpkg",
     "D:/vcpkg"
 )
