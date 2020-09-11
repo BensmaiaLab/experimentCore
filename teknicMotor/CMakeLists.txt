@@ -31,8 +31,6 @@ message("-- Linking Boost libraries")
 find_package(Boost REQUIRED)
 find_package(Boost REQUIRED COMPONENTS log)
 
-
-
 # Teknic sFoundation20 DLL
 if(WIN32)
     add_subdirectory(sfoundation)
@@ -45,6 +43,9 @@ include_directories(
     ${Boost_INCLUDE_DIRS}
 )
 
+# After all the includes so it's aware. Right.
+add_subdirectory(src)
+
 # add the executable
 add_executable(${MAINTGT} "${PROJECT_SOURCE_DIR}/src/main.cpp")
 
@@ -53,8 +54,10 @@ target_link_libraries(${MAINTGT}
     # optimized ${Boost_LIBRARY_DIR_RELEASE}/boost_system-vc140-mt.lib
     debug "${Boost_LIBRARY_DIR_DEBUG}/boost_system-vc140-mt-gd.lib"
     debug "${Boost_LIBRARY_DIR_DEBUG}/boost_log-vc140-mt-gd.lib"
+    wrapNode
+    motorAPI
 )
-# ex Boost_LIBRARY_DIRS = C:\Users\Somlab\repos\vcpkg\installed\x64-windows\lib
+
 # install(TARGETS ${MAINTGT} DESTINATION bin)
 
 # TODO Make this handle debug vs release
