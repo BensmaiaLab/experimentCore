@@ -7,7 +7,7 @@ if (Test-Path $BuildPath) {
 New-Item -ItemType 'directory' -path $BuildPath
 
 Set-Location $BuildPath
-write-host -ForegroundColor Green "Building in: ${BuildPath}"
+Write-Host -ForegroundColor Green "Building in: ${BuildPath}"
 
 # Hackish, but makes it work across systems. Add yours to array if necessary.
 # Uses whichever path it finds first that's valid.
