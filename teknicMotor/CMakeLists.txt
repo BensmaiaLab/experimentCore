@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.10)
 
 set(MAINTGT TeknicMotor) # set the project name
+
+#TODO: Make this handle debug vs release
 set(CMAKE_BUILD_TYPE "Debug") 
 
 # VCpkg setup for WIN
@@ -28,7 +30,6 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 message("-- Linking Boost libraries")
-find_package(Boost REQUIRED)
 find_package(Boost REQUIRED COMPONENTS log)
 
 # Teknic sFoundation20 DLL
@@ -60,7 +61,7 @@ target_link_libraries(${MAINTGT}
 
 # install(TARGETS ${MAINTGT} DESTINATION bin)
 
-# TODO Make this handle debug vs release
+
 if(WIN32)
     add_custom_command(TARGET ${MAINTGT} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different ${sfoundationDir}/lib/debug/sFoundation20.dll $<TARGET_FILE_DIR:${MAINTGT}>)
