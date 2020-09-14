@@ -13,7 +13,7 @@ Write-Host -ForegroundColor Green "Building in: ${BuildPath}"
 # Uses whichever path it finds first that's valid.
 $vcpkgPaths = @(
     "C:/opt/vcpkg",
-    "C:/Users/Somlab/repos/vcpkg",
+    "C:/Users/Somlab/source/repos/vcpkg",
     "D:/vcpkg"
 )
 ForEach ($p in $vcpkgPaths) {

@@ -14,7 +14,8 @@ Node::Node(sFnd::INode &node, MotorAPI *mapi):
     // theNode.Setup.ConfigLoad("Config File path");
     printDetails();
     enable();
-    home();
+    //TODO: Home all our nodes!
+    //! home();
 }
 
 Node::~Node(void) {
@@ -132,17 +133,15 @@ void Node::move(
     const int &speed = MAX_VEL_LIM_RPM,
     const int &accel = MAX_ACC_LIM_RPM
 ) {
-    m_node.Motion.MoveWentDone();        // Clear "move done" register
     
     m_node.VelUnit(sFnd::INode::RPM);
     m_node.Motion.VelLimit = speed;
 
     m_node.AccUnit(sFnd::INode::RPM_PER_SEC);
     m_node.Motion.AccLimit = accel;
-
+    BOOST_LOG_TRIVIAL(info) << "Moving Node " << m_node.Info.UserID.Value() << " moveCounts " << moveCounts;
     try {
         m_node.Motion.MovePosnStart(moveCounts);
-        BOOST_LOG_TRIVIAL(info) << "Moving Node " << m_node.Info.UserID.Value() << " moveCounts " << moveCounts;
         
         auto moveTime = m_node.Motion.MovePosnDurationMsec(moveCounts, true);
         BOOST_LOG_TRIVIAL(debug) << "Estimated move duration (abs): " << moveTime << "ms";
@@ -155,6 +154,8 @@ void Node::move(
             }
         }
         BOOST_LOG_TRIVIAL(info) << "Move Done for " << m_node.Info.UserID.Value();
+        //! Clear the register only if it's successful?
+        // m_node.Motion.MoveWentDone();        // Clear "move done" register
     } catch (sFnd::mnErr& theErr) {
         // (defined by the mnErr class)
         // sFnd::_mnErr::ErrorMsg
