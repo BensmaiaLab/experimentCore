@@ -5,20 +5,55 @@ import nidaqmx.system
 from nidaqmx.stream_readers import AnalogSingleChannelReader as ASCR
 import numpy
 
-sampleArray = numpy.zeros(10)
+#TODO:  from .recorder import Recorder
 
-system = nidaqmx.system.System.local()
-dv = system.driver_version
-print(f"NIDAQmx Driver version {dv.major_version}.{dv.minor_version}.{dv.update_version}")
 
-print("Available NIDAQ devices on this system:")
-for device in system.devices:
-    print(device)
+class DAQ:
+    """Convenience Wrapper to make it easy to record data from NIDAQ."""
 
-# And "Dev1/ai4" on my test bench
-with nidaqmx.Task() as task:
-    task.ai_channels.add_ai_voltage_chan("Dev1/ai0")
-    reader = ASCR(task.in_stream)
-    reader.read_many_sample(sampleArray, 10)
+    def __init__(self):
+        """Assumes first device by default."""
+        self.system = nidaqmx.system.System.local()
+        self.device = self.system.devices[0]
 
-print(sampleArray)
+    def __repr__(self):
+        dv = self.system.driver_version
+        return "<DAQ Wrapper class - NIDAQmx Driver ver: " +\
+            f"{dv.major_version}.{dv.minor_version}.{dv.update_version}>"
+
+    def printChans(self):
+        """Returns a list of available device identifiers."""
+        print(self.device.name + " | " + self.enumChans())
+
+    def enumChans(self):
+        """Returns prettied device detail string."""
+        out = ''
+        # Analog and counter channels bc they're similiar first:
+        for chanType in ['ai', 'ao', 'ci', 'co', 'di', 'do']:
+            if chanType in ['di', 'do']:
+                count = len(getattr(self.device, chanType + '_lines')) - 1
+            else:
+                count = len(getattr(self.device, chanType + '_physical_chans')) - 1
+            if count == 0:
+                out += f'/{chanType}0 '
+            elif count == -1:
+                out += f'/{chanType}N '
+            else:
+                out += f'/{chanType}0:{count} '
+        return out
+
+    def sampleStream(self, devAddr: str = "Dev1/ai0"):
+        """Get many samples in a stream."""
+        sampleArray = numpy.zeros(10)
+        # And "Dev1/ai4" on my test bench
+        with nidaqmx.Task() as task:
+            task.ai_channels.add_ai_voltage_chan(devAddr)
+            reader = ASCR(task.in_stream)
+            reader.read_many_sample(sampleArray, 10)
+
+        print(sampleArray)
+
+
+if __name__ == "__main__":
+    d = DAQ()
+    d.printChans()
