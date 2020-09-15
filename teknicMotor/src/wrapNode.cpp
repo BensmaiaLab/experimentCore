@@ -6,6 +6,7 @@
 Node::Node(sFnd::INode &node, MotorAPI *mapi):
     m_node(node), m_api(mapi) {
 
+    std::string m_name = m_node.Info.UserID.Value();
     //sFnd::SysManager *m_manager = mapi;
 
     // Following 3 are optional if I wish to load a config file:
@@ -37,11 +38,11 @@ void Node::enable() {
     //This will loop checking on the Real time values of the node's Ready status
     while (!m_node.Motion.IsReady()) {
         if (m_api->TimeStampMsec() > timeout) {
-            BOOST_LOG_TRIVIAL(error) << "Error: Timed out waiting for Node " << m_node.Info.UserID.Value() << " to enable";
+            BOOST_LOG_TRIVIAL(error) << "Error: Timed out waiting for Node " << m_name << " to enable";
             return;
         }
     }
-    BOOST_LOG_TRIVIAL(info) << "Node enabled: " << m_node.Info.UserID.Value();
+    BOOST_LOG_TRIVIAL(info) << "Node enabled: " << m_name;
 }
 
 
@@ -69,7 +70,7 @@ void Node::home(){
         }
         BOOST_LOG_TRIVIAL(info) << "Node completed homing.";
     } else {
-        BOOST_LOG_TRIVIAL(warning) << "Homing never setup through ClearView. The node cannot be homed: " << m_node.Info.UserID.Value();
+        BOOST_LOG_TRIVIAL(warning) << "Homing never setup through ClearView. Node " << m_name << " cannot be homed.";
     }
 }
 
@@ -83,7 +84,7 @@ void Node::printDetails() {
     BOOST_LOG_TRIVIAL(info) << "     Model: " <<  m_node.Info.Model.Value();
     BOOST_LOG_TRIVIAL(info) << "  Serial #: " <<  std::to_string(m_node.Info.SerialNumber.Value()).c_str();
     BOOST_LOG_TRIVIAL(info) << "FW version: " <<  m_node.Info.FirmwareVersion.Value();
-    BOOST_LOG_TRIVIAL(info) << "    userID: " <<  m_node.Info.UserID.Value();
+    BOOST_LOG_TRIVIAL(info) << "    userID: " <<  m_name;
 }
 
 
@@ -133,13 +134,38 @@ void Node::move(
     const int &speed = MAX_VEL_LIM_RPM,
     const int &accel = MAX_ACC_LIM_RPM
 ) {
+    // Buffer for possible messages.
+    char alertList[256];
+
+    // Need to do some pre-checks to make sure node is ready:
+    m_node.Status.RT.Refresh();
+    m_node.Status.Alerts.Refresh();
+
+    // if an alert is present:
+    if (!m_node.Status.RT.Value().cpm.AlertPresent) {   
     
+        if (m_node.Status.Alerts.Value().isInAlert()) {
+            // get a copy of the alert register bits and a text description of all bits set
+            m_node.Status.Alerts.Value().StateStr(alertList, 256);
+            BOOST_LOG_TRIVIAL(warning) << "Alerts found on this node: " << alertList;
+        }
+    }
+
+    //Check to see if the node experienced torque saturation
+    if (m_node.Status.HadTorqueSaturation()) {
+        BOOST_LOG_TRIVIAL(warning) << "Node has experienced torque saturation since last checking\n";
+    }
+
+
+    // Then set the velocity/accel:
     m_node.VelUnit(sFnd::INode::RPM);
     m_node.Motion.VelLimit = speed;
 
     m_node.AccUnit(sFnd::INode::RPM_PER_SEC);
     m_node.Motion.AccLimit = accel;
-    BOOST_LOG_TRIVIAL(info) << "Moving Node " << m_node.Info.UserID.Value() << " moveCounts " << moveCounts;
+
+    // Now move.
+    BOOST_LOG_TRIVIAL(info) << "Moving Node " << m_name << " moveCounts " << moveCounts;
     try {
         m_node.Motion.MovePosnStart(moveCounts);
         
@@ -153,13 +179,16 @@ void Node::move(
                 BOOST_LOG_TRIVIAL(error) << "Timed out waiting for move to complete";
             }
         }
-        BOOST_LOG_TRIVIAL(info) << "Move Done for " << m_node.Info.UserID.Value();
+        BOOST_LOG_TRIVIAL(info) << "Move complete on " << m_name;
         //! Clear the register only if it's successful?
         // m_node.Motion.MoveWentDone();        // Clear "move done" register
     } catch (sFnd::mnErr& theErr) {
         // (defined by the mnErr class)
         // sFnd::_mnErr::ErrorMsg
-        BOOST_LOG_TRIVIAL(error) << "moveNode() | addr: " << theErr.TheAddr << " | err: " << theErr.ErrorCode << " | msg: " << theErr.ErrorMsg;
+        BOOST_LOG_TRIVIAL(error) << "moveNode() [" << theErr.TheAddr << "] " << theErr.ErrorCode << "| " << theErr.ErrorMsg;
+        // Some test cases to see if I can do inline remediation based on code:
+        if (theErr.ErrorCode == 0x80040002) { BOOST_LOG_TRIVIAL(info) << "Got timeout."; }
+        if (theErr.ErrorCode == 0x8004010c) { BOOST_LOG_TRIVIAL(info) << "Move blocked."; }
     }
 }
 

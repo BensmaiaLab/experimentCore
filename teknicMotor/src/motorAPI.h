@@ -4,7 +4,6 @@
 #include <pubSysCls.h>
 
 class Node;
-
 class MotorAPI {
 private:
     sFnd::SysManager *m_manager;
@@ -31,6 +30,7 @@ private:
     sFnd::INode &m_node;
     MotorAPI *m_api;
     Node() = delete;
+    std::string m_name;
 
     long convertPositionToCount(long posInMM);
     long convertVelToRPM(long level);

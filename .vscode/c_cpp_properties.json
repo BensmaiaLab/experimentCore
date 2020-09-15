@@ -4,7 +4,11 @@
             "name": "Win32",
             "includePath": [
                 "${workspaceFolder}/**",
-                "${vcpkgRoot}/x86-windows/include"
+                "${vcpkgRoot}/x86-windows/include",
+                "${vcpkgRoot}/x64-windows/include",
+                "${teknicInc}",
+                "C:/Program Files (x86)/Teknic/ClearView/sdk/inc",
+                "${workspaceFolder}/teknicMotor/sfoundation/inc"
             ],
             "defines": [
                 "_DEBUG",
