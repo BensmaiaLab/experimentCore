@@ -5,8 +5,6 @@ import nidaqmx.system
 from nidaqmx.stream_readers import AnalogSingleChannelReader as ASCR
 import numpy
 
-from .recorder import Recorder
-
 
 class DAQ:
     """Convenience Wrapper to make it easy to record data from NIDAQ."""
@@ -58,10 +56,10 @@ class DAQ:
             reader.read_many_sample(sampleArray, 10)
         return sampleArray
 
+def _test():
+    daq = DAQ()
+    daq.printChans()
+    print(daq.sampleStream().tolist())
 
 if __name__ == "__main__":
-    r = Recorder('samples')
-    d = DAQ()
-    r.recordSamples(d.sampleStream().tolist())
-    r.print()
-    input()
+    _test()
