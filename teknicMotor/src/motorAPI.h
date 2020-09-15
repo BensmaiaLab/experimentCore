@@ -43,6 +43,7 @@ public:
     void moveHigh(const int &position, const int &velLevel = 10, const int &accLevel = 10);
     void enable();
     void disable();
+    void handleAlerts();
     void home();
     void printDetails();
 

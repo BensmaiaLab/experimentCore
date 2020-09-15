@@ -128,16 +128,10 @@ long Node::convertAccToRPM(long level) {
 }
 
 
-/* Generic move function built off examples. */
-void Node::move(
-    const int &moveCounts = 1000,
-    const int &speed = MAX_VEL_LIM_RPM,
-    const int &accel = MAX_ACC_LIM_RPM
-) {
+void Node::handleAlerts() {
     // Buffer for possible messages.
     char alertList[256];
 
-    // Need to do some pre-checks to make sure node is ready:
     m_node.Status.RT.Refresh();
     m_node.Status.Alerts.Refresh();
 
@@ -155,7 +149,18 @@ void Node::move(
     if (m_node.Status.HadTorqueSaturation()) {
         BOOST_LOG_TRIVIAL(warning) << "Node has experienced torque saturation since last checking\n";
     }
+}
 
+
+
+/* Generic move function built off examples. */
+void Node::move(
+    const int &moveCounts = 1000,
+    const int &speed = MAX_VEL_LIM_RPM,
+    const int &accel = MAX_ACC_LIM_RPM
+) {
+    // Need to do some pre-checks to make sure node is ready:
+    handleAlerts();
 
     // Then set the velocity/accel:
     m_node.VelUnit(sFnd::INode::RPM);
