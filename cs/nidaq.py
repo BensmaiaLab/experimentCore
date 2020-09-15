@@ -5,7 +5,7 @@ import nidaqmx.system
 from nidaqmx.stream_readers import AnalogSingleChannelReader as ASCR
 import numpy
 
-#TODO:  from .recorder import Recorder
+from .recorder import Recorder
 
 
 class DAQ:
@@ -47,13 +47,21 @@ class DAQ:
         sampleArray = numpy.zeros(10)
         # And "Dev1/ai4" on my test bench
         with nidaqmx.Task() as task:
-            task.ai_channels.add_ai_voltage_chan(devAddr)
+            port = devAddr[(devAddr.find('/') + 1):]  # everything after the /
+            if 'ai' in port:
+                task.ai_channels.add_ai_voltage_chan(devAddr)
+            elif 'di' in port:
+                task.di_channels.add_di_chan(devAddr)
+            else:
+                print('sampleStream(devAddr) type is unsupported oh no')
             reader = ASCR(task.in_stream)
             reader.read_many_sample(sampleArray, 10)
-
-        print(sampleArray)
+        return sampleArray
 
 
 if __name__ == "__main__":
+    r = Recorder('samples')
     d = DAQ()
-    d.printChans()
+    r.recordSamples(d.sampleStream().tolist())
+    r.print()
+    input()

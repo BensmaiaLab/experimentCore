@@ -33,6 +33,10 @@ class Recorder():
         self.rowCount = self.rowCount + len(samples)
         return True
 
+    def print(self):
+        """Print the last 10 samples for sanity checking."""
+        self.data[-10:]
+
 
 class FileRecorder():
     """Record data stream to a buffered file."""
