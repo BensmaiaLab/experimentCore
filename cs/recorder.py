@@ -36,7 +36,7 @@ class Recorder():
     def print(self):
         """Print the last 10 samples for sanity checking."""
         # print(self.data[-10:])
-        pprint(self.data[-10:])
+        pprint(self.data[-100:])
 
 
 class FileRecorder():
