@@ -15,8 +15,8 @@ class DAQ:
         if len(self.system.devices) > 0:
             self.device = self.system.devices[0]
         else:
-            raise RuntimeError("No NIDAQmx device during initialization " \
-            + "of library. Please make sure device is connected to system.")
+            raise RuntimeError("NIDAQmx device not found during init." \
+            + " Please make sure an NI device is connected to system.")
 
     def __repr__(self):
         dv = self.system.driver_version
@@ -44,9 +44,10 @@ class DAQ:
                 out += f'/{chanType}0:{count} '
         return out
 
-    def sampleStream(self, devAddr: str = "Dev1/ai0"):
+    def sampleStreamOnce(self, devAddr: str = "Dev1/ai0"):
         """Get many samples in a stream."""
-        sampleArray = numpy.zeros(10)
+        sampleSize = 100
+        sampleArray = numpy.zeros(sampleSize)
         # And "Dev1/ai4" on my test bench
         with nidaqmx.Task() as task:
             port = devAddr[(devAddr.find('/') + 1):]  # everything after the /
@@ -57,8 +58,12 @@ class DAQ:
             else:
                 print('sampleStream(devAddr) type is unsupported oh no')
             reader = ASCR(task.in_stream)
-            reader.read_many_sample(sampleArray, 10)
-        return sampleArray
+            reader.read_many_sample(sampleArray, sampleSize)
+        return sampleArray.tolist()
+
+    def sampleStream(self):
+        """Return an iterator that gets a sample every time it's queried."""
+        pass
 
 def _test():
     daq = DAQ()

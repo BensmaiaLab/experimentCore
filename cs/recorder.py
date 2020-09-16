@@ -4,7 +4,7 @@
     This pretty much all assumes we're recording samples at time stamps."""
 
 from typing import List
-
+from pprint import pprint
 
 class Recorder():
     """Record data stream to data structure (memory)."""
@@ -13,7 +13,7 @@ class Recorder():
         self.columns = columns
         self.colCount = len(columns)
         self.rowCount = 0
-        self.data: []
+        self.data = []
 
     def __del__(self):
         pass
@@ -35,7 +35,8 @@ class Recorder():
 
     def print(self):
         """Print the last 10 samples for sanity checking."""
-        self.data[-10:]
+        # print(self.data[-10:])
+        pprint(self.data[-10:])
 
 
 class FileRecorder():

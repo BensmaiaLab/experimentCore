@@ -1,11 +1,12 @@
 """ Integrate and test... """
 
 from components.nidaq import DAQ
-from .recorder import Recorder
+from recorder import Recorder
 
 rec = Recorder('samples')
 daq = DAQ()
-rec.recordSamples(daq.sampleStream().tolist())
+rec.recordSamples(daq.sampleStreamOnce())
+print("10 samples in sequence, I think:")
 rec.print()
 
 
