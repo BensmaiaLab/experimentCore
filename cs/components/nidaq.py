@@ -12,7 +12,11 @@ class DAQ:
     def __init__(self):
         """Assumes first device by default."""
         self.system = nidaqmx.system.System.local()
-        self.device = self.system.devices[0]
+        if len(self.system.devices) > 0:
+            self.device = self.system.devices[0]
+        else:
+            raise RuntimeError("No NIDAQmx device during initialization " \
+            + "of library. Please make sure device is connected to system.")
 
     def __repr__(self):
         dv = self.system.driver_version

@@ -1,7 +1,7 @@
 """ Integrate and test... """
 
-from cs.components.nidaq import DAQ
-from cs.recorder import Recorder
+from components.nidaq import DAQ
+from .recorder import Recorder
 
 rec = Recorder('samples')
 daq = DAQ()
