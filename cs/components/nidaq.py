@@ -3,6 +3,7 @@
 import nidaqmx
 import nidaqmx.system
 from nidaqmx.stream_readers import AnalogSingleChannelReader as ASCR
+from nidaqmx import constants as NIconstants
 import numpy
 
 
@@ -13,6 +14,10 @@ class DAQ:
         """Assumes first device by default."""
         self.system = nidaqmx.system.System.local()
         self.task = nidaqmx.Task()
+        self.sampleSize = 100
+        self.devAddr = 'Dev1/ai0'
+        self.buffer = numpy.zeros(self.sampleSize)
+        self.reader = ASCR(self.task.in_stream)
         if len(self.system.devices) > 0:
             self.device = self.system.devices[0]
         else:
@@ -46,7 +51,7 @@ class DAQ:
         return out
 
     def _getSamples(self, sampleSize: int = 128, devAddr: str = "Dev1/ai0"):
-        """Internal func returns numpy array."""
+        """Naive and synchronous. Internal func returns numpy array."""
         sampleArray = numpy.zeros(sampleSize)
         # And "Dev1/ai4" on my test bench
         with self.task as task:
@@ -57,17 +62,42 @@ class DAQ:
                 task.di_channels.add_di_chan(devAddr)
             else:
                 print('sampleStream(devAddr) type is unsupported oh no')
-            reader = ASCR(task.in_stream)
-            reader.read_many_sample(sampleArray, sampleSize)
+            self.reader.read_many_sample(sampleArray, sampleSize)
         return sampleArray
+
+    def _callback(
+        self,
+        taskHandle,
+        everyNSamplesEventType,
+        numberSamples,
+        callbackData
+    ):
+        """Stuff."""
+        self.reader.read_many_sample(
+            self.buffer, numberSamples, timeout=NIconstants.WAIT_INFINITELY)
+        print(self.buffer.tolist())
+        return 0
+
+
+    def _setupCallback(self):
+        """Setup the callback at the beginning."""
+        self.task.ai_channels.add_ai_voltage_chan(self.devAddr)
+        self.task.timing.cfg_samp_clk_timing(
+            rate=100,
+            sample_mode=NIconstants.AcquisitionType.CONTINUOUS,
+            samps_per_chan=self.sampleSize)
+        self.task.register_every_n_samples_acquired_into_buffer_event(
+            self.sampleSize,
+            self._callback)
 
 
     def sampleStreamOnce(self, sampleSize: int = 128, devAddr: str = "Dev1/ai0"):
-        """Get a set of samples."""
+        """Naive and synchronous. Get a set of samples."""
         self._getSamples(sampleSize, devAddr).tolist()
 
     def sampleStream(self, sampleSize: int = 128, devAddr: str = "Dev1/ai0"):
-        """Return an iterator that gets (a set of) samples every time it's queried."""
+        """Naive and synchronous.
+        Return an iterator that gets (a set of) samples every time it's queried."""
         class IterSamples:
             """Iterator of samples."""
             def __init__(self, daq: DAQ, sampleSize: int, devAddr: str):
