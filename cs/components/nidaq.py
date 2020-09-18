@@ -15,25 +15,25 @@ class DAQ:
         self.system = nidaqmx.system.System.local()
         self.task = nidaqmx.Task()
         self.sampleSize = 100
-        self.devAddr = 'Dev1/ai0'
         self.buffer = numpy.zeros(self.sampleSize)
         self.reader = ASCR(self.task.in_stream)
         if len(self.system.devices) > 0:
             self.device = self.system.devices[0]
         else:
             raise RuntimeError("NIDAQmx device not found during init." \
-            + " Please make sure an NI device is connected to system.")
+            + " Please make sure a NI device is connected.")
+        self.devAddr = self.device.name +'/ai0'
 
     def __repr__(self):
-        dv = self.system.driver_version
+        drv = self.system.driver_version
         return "<DAQ Wrapper class - NIDAQmx Driver ver: " +\
-            f"{dv.major_version}.{dv.minor_version}.{dv.update_version}>"
+            f"{drv.major_version}.{drv.minor_version}.{drv.update_version}>"
 
     def printChans(self):
         """Returns a list of available device identifiers."""
-        print(self.device.name + " | " + self.enumChans())
+        print(self.device.name + " | " + self._enumChans())
 
-    def enumChans(self):
+    def _enumChans(self):
         """Returns prettied device detail string."""
         out = ''
         # Analog and counter channels bc they're similiar first:
@@ -50,6 +50,32 @@ class DAQ:
                 out += f'/{chanType}0:{count} '
         return out
 
+    def _callback(
+            self,
+            taskHandle,
+            everyNSamplesEventType,
+            numberSamples,
+            callbackData
+    ):
+        # pylint: disable=unused-argument
+        """Reads data from NI when enough samples are buffered."""
+        self.reader.read_many_sample(
+            self.buffer, numberSamples, timeout=NIconstants.WAIT_INFINITELY)
+        print(self.buffer.tolist())
+        return 0
+
+
+    def _setupCallback(self, rate: int = 100):
+        """Sets up a callback to read data whenever a buffer gets filled."""
+        self.task.ai_channels.add_ai_voltage_chan(self.devAddr)
+        self.task.timing.cfg_samp_clk_timing(
+            rate=rate,
+            sample_mode=NIconstants.AcquisitionType.CONTINUOUS,
+            samps_per_chan=self.sampleSize)
+        self.task.register_every_n_samples_acquired_into_buffer_event(
+            self.sampleSize,
+            self._callback)
+
     def _getSamples(self, sampleSize: int = 128, devAddr: str = "Dev1/ai0"):
         """Naive and synchronous. Internal func returns numpy array."""
         sampleArray = numpy.zeros(sampleSize)
@@ -64,36 +90,6 @@ class DAQ:
                 print('sampleStream(devAddr) type is unsupported oh no')
             self.reader.read_many_sample(sampleArray, sampleSize)
         return sampleArray
-
-    def _callback(
-        self,
-        taskHandle,
-        everyNSamplesEventType,
-        numberSamples,
-        callbackData
-    ):
-        """Stuff."""
-        self.reader.read_many_sample(
-            self.buffer, numberSamples, timeout=NIconstants.WAIT_INFINITELY)
-        print(self.buffer.tolist())
-        return 0
-
-
-    def _setupCallback(self):
-        """Setup the callback at the beginning."""
-        self.task.ai_channels.add_ai_voltage_chan(self.devAddr)
-        self.task.timing.cfg_samp_clk_timing(
-            rate=100,
-            sample_mode=NIconstants.AcquisitionType.CONTINUOUS,
-            samps_per_chan=self.sampleSize)
-        self.task.register_every_n_samples_acquired_into_buffer_event(
-            self.sampleSize,
-            self._callback)
-
-
-    def sampleStreamOnce(self, sampleSize: int = 128, devAddr: str = "Dev1/ai0"):
-        """Naive and synchronous. Get a set of samples."""
-        self._getSamples(sampleSize, devAddr).tolist()
 
     def sampleStream(self, sampleSize: int = 128, devAddr: str = "Dev1/ai0"):
         """Naive and synchronous.
@@ -111,6 +107,7 @@ class DAQ:
 
             def __next__(self):
                 self.index += 1
+                # pylint: disable=protected-access
                 return self.daq._getSamples(
                     sampleSize=self.sampleSize,
                     devAddr=self.devAddr).tolist()
@@ -120,7 +117,7 @@ class DAQ:
 def _test():
     daq = DAQ()
     daq.printChans()
-    print(daq.sampleStreamOnce().tolist())
+    # print(daq.sampleStreamOnce().tolist())
 
 if __name__ == "__main__":
     _test()
