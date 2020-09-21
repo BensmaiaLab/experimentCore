@@ -13,6 +13,7 @@ Write-Host -ForegroundColor Green "Building in: ${BuildPath}"
 # Uses whichever path it finds first that's valid.
 $vcpkgPaths = @(
     "C:/opt/vcpkg",
+    "D:/opt/vcpkg",
     "C:/Users/Somlab/source/repos/vcpkg",
     "D:/vcpkg"
 )
@@ -20,6 +21,7 @@ ForEach ($p in $vcpkgPaths) {
     $vcpkgPath = $p + "/scripts/buildsystems/vcpkg.cmake"
     if (Test-Path $vcpkgPath) {break}
 }
+Write-Host -ForegroundColor Green "Using VCPkg path: $vcpkgPath"
 
 cmake ../ -DCMAKE_TOOLCHAIN_FILE="${vcpkgPath}"
 cmake --build .

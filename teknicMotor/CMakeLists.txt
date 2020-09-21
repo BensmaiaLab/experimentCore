@@ -55,7 +55,6 @@ target_link_libraries(${MAINTGT}
     # optimized ${Boost_LIBRARY_DIR_RELEASE}/boost_system-vc140-mt.lib
     debug "${Boost_LIBRARY_DIR_DEBUG}/boost_system-vc140-mt-gd.lib"
     debug "${Boost_LIBRARY_DIR_DEBUG}/boost_log-vc140-mt-gd.lib"
-    wrapNode
     motorAPI
 )
 
