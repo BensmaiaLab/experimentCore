@@ -1,4 +1,6 @@
 
+function Write-Info ($s) { Write-Host -ForegroundColor Green $s }
+
 function Get-VCPkgRoot {
     # Ask where.exe if vcpkg is on the path already. Otherwise, search known locations.
     $VCPkgRoot = ""
