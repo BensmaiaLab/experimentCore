@@ -100,6 +100,11 @@ forEach ($ext in $vsCodeExtToInstall) {
 Set-PSRepository PSGallery -InstallationPolicy Trusted
 Install-Module VSSetup
 
+# Set env vars for common packages:
+[Environment]::SetEnvironmentVariable("NIDAQ_HOME", "C:\Program Files (x86)\National Instruments", "Machine")
+[Environment]::SetEnvironmentVariable("Teknic", "C:\Program Files (x86)\Teknic\ClearView\sdk\", "Machine")
+
+
 Write-Host -ForegroundColor Green @"
 
 
