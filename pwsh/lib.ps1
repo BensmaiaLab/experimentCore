@@ -30,3 +30,20 @@ function Test-VcpkgInstalled {
     }
     return $True
 }
+
+function Get-CredentialFromString {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingPlainTextForPassword", '', Scope="Function", Target="*")]
+    # Take string versions of user/pass and construct a credential object.
+    # Bypasses a lot of the shenanigans MS put in the way to make this hard to
+    # do so you don't mess up the security model.
+    Param (
+        [parameter(Mandatory=$true, Position=0)]
+        [ValidateNotNullOrEmpty()]
+        [string]$username,
+        [parameter(Mandatory=$true, Position=1)]
+        [ValidateNotNullOrEmpty()]
+        [string]$password
+    )
+    $hashedPass = ConvertTo-SecureString -AsPlainText $password -Force
+    New-Object System.Management.Automation.PSCredential -ArgumentList $username, $hashedPass
+}
