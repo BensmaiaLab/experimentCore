@@ -6,7 +6,7 @@
                 "${workspaceFolder}/**",
                 "${vcpkgRoot}/x86-windows/include",
                 "${vcpkgRoot}/x64-windows/include",
-                "${teknicInc}",
+                "${teknic}",
                 "C:/Program Files (x86)/Teknic/ClearView/sdk/inc",
                 "${workspaceFolder}/teknicMotor/sfoundation/inc"
             ],
