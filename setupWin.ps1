@@ -5,9 +5,8 @@ Set-ExecutionPolicy Bypass -Scope Process -Force
 
 # Install Chocolatey:
 # https://chocolatey.org/install
-Set-ExecutionPolicy Bypass -Scope Process -Force
 [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
-iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
 
 # install the things we need to do the rest:
 `choco install -y --force --params "ALLUSERS=1" openssh git.install vlc 7zip.install googlechrome vcredist140 dotnetfx sysinternals ccleaner python vscode saltminion sysinternals virtualbox vagrant vagrant-manager firacode mingw nomachine hugo-extended nodejs`
@@ -21,25 +20,33 @@ choco install -y --no-progress --force visualstudio2019community --package-param
 --add Microsoft.VisualStudio.Workload.Python"
 ```
 
+$optDir = "C:\opt\"
 # Reset path after all the updates:
 $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User") 
 
-# setup vcpkg:
-# https://github.com/microsoft/vcpkg
-$optDir = "C:\opt\"
 if (!(Test-Path $optDir)) { New-Item -ItemType 'directory' -path $optDir }
 set-location $optDir
 
-
-git clone git@github.com:microsoft/vcpkg.git
-.\vcpkg\bootstrap-vcpkg.bat
-.\vcpkg\vcpkg integrate install
+# setup vcpkg:
+# https://github.com/microsoft/vcpkg
+if (!(Test-Path ${OptDir}\vcpkg)) {git clone git@github.com:microsoft/vcpkg.git }
+Invoke-Expression "${optDir}vcpkg\bootstrap-vcpkg.bat"
+Invoke-Expression "${optDir}vcpkg\vcpkg integrate install"
 
 # Set triplet:
-
 $env:VCPKG_DEFAULT_TRIPLET = "x64-windows"
-.\vcpkg\vcpkg install boost:x64-windows
 
+# And download ALL the code packages
+.\vcpkg\vcpkg install boost:x64-windows grpc:x64-windows
+
+#TODO: Should I make sure these apps are installed first? Ugh.
+# Stereognosis project needs these env vars
+if (-NOT($Env:Teknic)) {
+    [Environment]::SetEnvironmentVariable("Teknic", "C:\Program Files (x86)\Teknic\ClearView\sdk\", "Machine")
+}
+if (-NOT($Env:NIDAQ_HOME)) {
+    [Environment]::SetEnvironmentVariable("NIDAQ_HOME", "C:\Program Files (x86)\National Instruments", "Machine")
+}
 
 # Manually update system path
 # This adds cmake
@@ -57,7 +64,7 @@ Set-ItemProperty -Path $regUsrPath -Name PATH -Value ($oldUsrPath + ';' + ($path
 # Manually adds to path
 $env:Path += ';' + ($pathsToAdd -join ";")
 
-
+#TODO: Check that this isn't already on the path
 # Automatically add the cmake toolchain file to my VS Code install
 $p = ($ENV:APPDATA + '\Code\User\settings.json')
 $s = Get-Content $p | ConvertFrom-Json -AsHashtable
@@ -66,6 +73,7 @@ if (!($s.ContainsKey('cmake.configureSettings'))) {
     $s.'cmake.configureSettings' = @{CMAKE_TOOLCHAIN_FILE = "$cmOptDir/scripts/buildsystems/vcpkg.cmake"}
     $s | ConvertTo-Json | Out-File $p
 }
+
 
 
 # Install my rec'd VSCode extensions
@@ -99,11 +107,6 @@ forEach ($ext in $vsCodeExtToInstall) {
 
 Set-PSRepository PSGallery -InstallationPolicy Trusted
 Install-Module VSSetup
-
-# Set env vars for common packages:
-[Environment]::SetEnvironmentVariable("NIDAQ_HOME", "C:\Program Files (x86)\National Instruments", "Machine")
-[Environment]::SetEnvironmentVariable("Teknic", "C:\Program Files (x86)\Teknic\ClearView\sdk\", "Machine")
-
 
 Write-Host -ForegroundColor Green @"
 
