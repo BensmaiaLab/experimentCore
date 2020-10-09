@@ -9,16 +9,16 @@ Set-ExecutionPolicy Bypass -Scope Process -Force
 Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
 
 # install the things we need to do the rest:
-`choco install -y --force --params "ALLUSERS=1" openssh git.install vlc 7zip.install googlechrome vcredist140 dotnetfx sysinternals ccleaner python vscode saltminion sysinternals virtualbox vagrant vagrant-manager firacode mingw nomachine hugo-extended nodejs`
-`choco install -y --force --params "ALLUSERS=1 ADD_CMAKE_TO_PATH=System" cmake`
-```powershell
+choco install -y --force --params "ALLUSERS=1" openssh git.install vlc 7zip.install googlechrome vcredist140 dotnetfx sysinternals ccleaner python vscode saltminion sysinternals virtualbox vagrant vagrant-manager firacode mingw nomachine hugo-extended nodejs
+choco install -y --force --params "ALLUSERS=1 ADD_CMAKE_TO_PATH=System" cmake
+powershell
 choco install -y --no-progress --force visualstudio2019community --package-parameters "\
 --norestart --nocache --includeRecommended --includeOptional \
 --add Microsoft.VisualStudio.Workload.NativeDesktop \
 --add Microsoft.VisualStudio.Workload.NativeCrossPlat \
 --add Microsoft.VisualStudio.Workload.ManagedDesktop \
 --add Microsoft.VisualStudio.Workload.Python"
-```
+
 
 $optDir = "C:\opt\"
 # Reset path after all the updates:
