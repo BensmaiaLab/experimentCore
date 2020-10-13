@@ -108,6 +108,12 @@ forEach ($ext in $vsCodeExtToInstall) {
 Set-PSRepository PSGallery -InstallationPolicy Trusted
 Install-Module VSSetup
 
+
+# Setup PC for remote access
+# This enables access from Citrine, DM's workstation, and the build server
+Set-Item -Path WSMan:\localhost\Client\TrustedHosts -Value '192.170.210.124' -Concatenate -Force
+Set-Item -Path WSMan:\localhost\Client\TrustedHosts -Value '128.135.218.161' -Concatenate -Force
+
 Write-Host -ForegroundColor Green @"
 
 
