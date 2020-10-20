@@ -110,9 +110,14 @@ Install-Module VSSetup
 
 
 # Setup PC for remote access
-# This enables access from Citrine, DM's workstation, and the build server
-Set-Item -Path WSMan:\localhost\Client\TrustedHosts -Value '192.170.210.124' -Concatenate -Force
-Set-Item -Path WSMan:\localhost\Client\TrustedHosts -Value '128.135.218.161' -Concatenate -Force
+Enable-PSRemoting -force
+# This enables access from Citrine (DM's workstation) and the build server
+$TrustedIPs = @('192.170.210.124', '128.135.218.161')
+ForEach ($ip in $TrustedIPs) {
+    Set-Item -Path WSMan:\localhost\Client\TrustedHosts -Value $ip -Concatenate -Force
+}
+# To see this list:
+# (Get-Item -Path WSMan:\localhost\Client\TrustedHosts).Value -Split ','
 
 Write-Host -ForegroundColor Green @"
 
