@@ -124,7 +124,7 @@ if (-NOT (Test-Path "L:")) {
     New-PSDrive -Name "L" -PSProvider "FileSystem" -Root "\\bensmaia-lab\LabSharing"
 }
 if (-NOT (Test-Path "K:")) {
-    New-PSDrive -Name "K" -PSProvider "FileSystem" -Root "\\citrine\artifacts"
+    New-PSDrive -Name "K" -PSProvider "FileSystem" -Root "\\192.170.210.124\artifacts"
 }
 
 Write-Host -ForegroundColor Green @"
