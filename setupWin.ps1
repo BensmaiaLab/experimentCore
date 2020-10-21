@@ -119,6 +119,11 @@ ForEach ($ip in $TrustedIPs) {
 # To see this list:
 # (Get-Item -Path WSMan:\localhost\Client\TrustedHosts).Value -Split ','
 
+# Map standard network drives
+if (-NOT (Test-Path "L:")) {
+    New-PSDrive -Name "L" -PSProvider "FileSystem" -Root "\\bensmaia-lab\LabSharing"
+}
+
 Write-Host -ForegroundColor Green @"
 
 
