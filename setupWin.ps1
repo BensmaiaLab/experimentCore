@@ -50,7 +50,7 @@ if (-NOT($Env:NIDAQ_HOME)) {
 
 # Manually update system path
 # This adds cmake
-$pathsToAdd = @('C:\Program Files\CMake\bin', 'D:\vcpkg\installed\x64-windows\tools\protobuf')
+$pathsToAdd = @('C:\Program Files\CMake\bin', 'C:\opt\vcpkg\installed\x64-windows\tools\protobuf')
 
 # Does the whole system?
 # $regSysPath = 'Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Session Manager\Environment'
