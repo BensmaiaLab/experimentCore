@@ -42,16 +42,16 @@ $env:VCPKG_DEFAULT_TRIPLET = "x64-windows"
 #TODO: Should I make sure these apps are installed first? Ugh.
 # Stereognosis project needs these env vars
 if (-NOT($Env:Teknic)) {
-    [Environment]::SetEnvironmentVariable("Teknic", "C:\Program Files (x86)\Teknic\ClearView\sdk", "Machine")
+    [Environment]::SetEnvironmentVariable("Teknic", "C:\Program Files (x86)\Teknic\ClearView\sdk\", "Machine")
 }
 if (-NOT($Env:NIDAQ_HOME)) {
-    [Environment]::SetEnvironmentVariable("NIDAQ_HOME", "C:\Program Files (x86)\National Instruments", "Machine")
+    [Environment]::SetEnvironmentVariable("NIDAQ_HOME", "C:\Program Files (x86)\National Instruments\", "Machine")
 }
 if (-NOT($Env:MatlabInc)) { #TODO: Could probably add some autodetect code to find the exact year/version.
-    [Environment]::SetEnvironmentVariable("MatlabInc", "C:\Program Files\MATLAB\R2020b\extern\include", "Machine")
+    [Environment]::SetEnvironmentVariable("Matlab", "C:\Program Files\MATLAB\R2020b\extern\", "Machine")
 }
 if (-NOT($Env:MatlabRTInc)) {
-    [Environment]::SetEnvironmentVariable("MatlabRTInc", "C:\Program Files\MATLAB\MATLAB Runtime\v99\extern\include", "Machine")
+    [Environment]::SetEnvironmentVariable("MatlabRT", "C:\Program Files\MATLAB\MATLAB Runtime\v99\extern\", "Machine")
 }
 
 # Manually update system path
