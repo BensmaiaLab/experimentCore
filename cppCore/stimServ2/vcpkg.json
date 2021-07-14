@@ -1,0 +1,12 @@
+{
+    "name": "bensmaialab-legacy",
+    "version-string": "1.0.0",
+    "description": "Legacy experimental applications for BensmaiaLab.",
+    "homepage": "http://github.com/BensmaiaLab/rigBase",
+    "dependencies": [
+        "boost-log",
+        "boost-property-tree",
+        "boost-program-options",
+        "zeromq"
+    ]
+}

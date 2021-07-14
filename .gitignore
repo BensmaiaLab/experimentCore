@@ -3,3 +3,5 @@ __pycache__
 .vscode
 controlClient.log
 controlServer.log
+.vs
+vcpkg_installed
