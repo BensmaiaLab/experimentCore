@@ -5,3 +5,4 @@ controlClient.log
 controlServer.log
 .vs
 vcpkg_installed
+bin

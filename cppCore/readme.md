@@ -59,3 +59,12 @@ easily.
 
 See for 0mq and promise/future: https://blog.pramp.com/inter-thread-communication-in-c-futures-promises-vs-sockets-aeebfffd2107
 
+
+
+
+StimService -
+
+Binds to a socket and subscribes to a controller
+
+
+Controller 
