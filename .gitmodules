@@ -1,0 +1,3 @@
+[submodule "cppCore/lib/zmqpp"]
+	path = cppCore/lib/zmqpp
+	url = git@github.com:zeromq/zmqpp.git
