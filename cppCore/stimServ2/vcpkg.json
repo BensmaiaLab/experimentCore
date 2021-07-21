@@ -7,6 +7,6 @@
         "boost-log",
         "boost-property-tree",
         "boost-program-options",
-        "zeromq"
+        "cppzmq"
     ]
 }

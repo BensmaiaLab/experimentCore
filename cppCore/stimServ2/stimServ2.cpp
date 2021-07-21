@@ -1,6 +1,7 @@
 // stimServ2.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
 #include "pch.h"
+#include "Messenger.h"
 
 enum class TrialState {
     UNKNOWN,
@@ -24,9 +25,9 @@ public:
 };
 
 
-int main()
-{
-    logInfo << "Starting service!";
-    //  Socket to talk to clients
+int main() {
+    Messenger m;
 
+    logInfo << "Starting service!";
+    m.receive();
 }
