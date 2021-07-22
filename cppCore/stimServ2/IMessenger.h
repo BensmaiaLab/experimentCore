@@ -5,8 +5,9 @@
 class IMessenger {
 public:
     //send msg to the thread this instance manages
-    virtual void processMessage(std::string msg) = 0;
+    //virtual void processMessage(std::string msg) = 0;
     //to follow RAII, the destructor sends a stop signal (via message) to the managed thread,
 	//and can either wait or detach for the thread to exit
-    virtual ~IMessenger() {}    
+    IMessenger() {}
+    virtual ~IMessenger() {}
 };

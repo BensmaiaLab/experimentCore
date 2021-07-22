@@ -4,7 +4,7 @@
 #include <iostream>
 #include <string>
 #pragma warning( push )
-#pragma warning( disable : 4244 26495 26812 26498)
+#pragma warning( disable : 4244 26495 26812 26498 26451)
 #include <boost/log/core.hpp>
 #include <boost/log/trivial.hpp>
 #include <boost/log/expressions.hpp>
