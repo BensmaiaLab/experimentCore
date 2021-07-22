@@ -6,32 +6,30 @@
 #include <string>
 #include <functional>
 
-#include "IMessenger.h"
+// #include "IMessenger.h"
 
-class Messenger: public IMessenger {
+
+class Listener {
 private:
     zmq::context_t _context;
     zmq::socket_t  _socket;
-    //std::unique_ptr<zmq::socket_t> _socket;
-    
-    //managed thread
-    //std::unique_ptr<std::thread> _thread;
 
 public:
-    //constructor (takes in fptr to a "reactor" function that "reacts"
-    //to a string message)
-    //Messenger(const std::function<void(std::string)>& reactor);
+    Listener(const std::string url);
+    ~Listener();
 
-    // Normal constructor
-    Messenger();
-    
-    //destructor (stops and waits for managed thread to exit)
-    ~Messenger();
+    void listen();
+};
 
-    //interface method
-    void receive();
+class Requester {
+    private:
+    zmq::context_t _context;
+    zmq::socket_t  _socket;
+
+public:
+    Requester(const std::string url);
+    ~Requester();
 
     void send(std::string &s);
     void send(const char *s);
-
 };

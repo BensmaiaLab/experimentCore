@@ -26,9 +26,9 @@ public:
 
 
 int main() {
-    Messenger m1;
-    Messenger m2;
-    m1.send("hello");
     logInfo << "Starting service!";
-    m2.receive();
+    Listener listener("tcp://*:5555"); //bind
+    Requester requester("tcp://localhost:5555"); //connect
+    requester.send("hello");
+    listener.listen();
 }
