@@ -37,6 +37,6 @@ public:
     void receive();
 
     void send(std::string &s);
-
+    void send(const char *s);
 
 };

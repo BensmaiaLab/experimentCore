@@ -33,3 +33,7 @@ void Messenger::receive() {
 void Messenger::send(std::string &s) {
     zmq_send(this->_socket, s.c_str(), s.length(), 0);
 }
+
+void Messenger::send(const char *s) {
+    zmq_send(this->_socket, s, strlen(s), 0);
+}

@@ -26,8 +26,9 @@ public:
 
 
 int main() {
-    Messenger m;
-
+    Messenger m1;
+    Messenger m2;
+    m1.send("hello");
     logInfo << "Starting service!";
-    m.receive();
+    m2.receive();
 }
