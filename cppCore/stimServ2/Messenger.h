@@ -10,13 +10,8 @@
 
 class Messenger: public IMessenger {
 private:
-    //zmq context (necessary for sockets to work)
-    void * _context;
-    //std::unique_ptr<zmq::context_t> _context;
-
-    //socket that will talk to managed background thread's
-    //socket
-    void * _socket;
+    zmq::context_t _context;
+    zmq::socket_t  _socket;
     //std::unique_ptr<zmq::socket_t> _socket;
     
     //managed thread
