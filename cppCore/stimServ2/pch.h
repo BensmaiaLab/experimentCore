@@ -6,6 +6,8 @@
 
 // Other standards I use everywhere:
 #include <string>
+#include <vector>
+#include <numeric> //std::iota
 
 // My own:
 #include "Tools.h"
