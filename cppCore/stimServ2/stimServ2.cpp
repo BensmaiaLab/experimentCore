@@ -28,15 +28,16 @@ public:
 
 
 void thread1() {
-    logInfo << "thread1 running";
-    Listener listener("tcp://*:5555"); //bind
+    logInfo << "running";
+    Listener listener("tcp://*:25555"); //bind
     listener.listen();
 }
 
 void thread2() {
-    logInfo << "thread2 running";
-    Requester requester("tcp://localhost:5555"); //connect
+    logInfo << "running";
+    Requester requester("tcp://localhost:25555"); //connect
     for (auto i = 0; i < 10; i++) {
+        logInfo << "hello " << i;
         requester.send("hello");
         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     }

@@ -12,6 +12,10 @@ Listener::Listener(const std::string url):
     _context(1), // n io threads (1 is sane default)
     _socket(this->_context, ZMQ_REP)
 {
+    // Get version
+    auto [vMa, vMi, vP] = zmq::version();
+    logInfo << "Using ZeroMQ version " << vMa << "." << vMi << "." << vP << ".";
+
     try {
         this->_socket.bind(url);
     } catch (zmq::error_t::exception) {
@@ -33,6 +37,7 @@ void Listener::listen() {
         zmq::message_t reply(5);
         memcpy(reply.data(), "World", 5);
         zmq::send_result_t res2 = this->_socket.send(reply, zmq::send_flags::none);
+        logInfo << "replied World";
     }
 }
 
@@ -44,8 +49,8 @@ Requester::Requester(const std::string url):
 {
     try {
         this->_socket.connect(url);
-    } catch (zmq::error_t::exception) {
-        logError << "Failed to connect Requester socket to url " << url;
+    } catch (zmq::error_t::exception e) {
+        logError << "Failed to connect Requester socket to url " << url << " with exception " << e.what();
         this->_socket.close();
     }
     logInfo << "Requester connected to " << url;
@@ -63,10 +68,11 @@ void Requester::send(const char *s) {
     zmq::message_t msg(strlen(s));
     //memcpy(msg.data(), s, strlen(s));
     memcpy(msg.data(), "hello", 5);
-    zmq::send_result_t response = this->_socket.send(msg, zmq::send_flags::none);
-    if (response.value() != 0) {
-        
-        logError << "failed to send with errno " << response.value();
+    logInfo << "attemping to send message: " << msg.to_string();
+    try {
+        zmq::send_result_t response = this->_socket.send(msg, zmq::send_flags::none);
+    } catch (zmq::error_t::exception e) {
+        logError << "failed to send: " << e.what();
     }
     logInfo << "Sent hello.";
 }
