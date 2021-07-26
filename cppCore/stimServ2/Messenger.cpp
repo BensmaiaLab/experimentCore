@@ -8,7 +8,7 @@
 
 
 // Listener
-Listener::Listener(const std::string url):
+Server::Server(const std::string url):
     _context(1), // n io threads (1 is sane default)
     _socket(this->_context, ZMQ_REP)
 {
@@ -25,56 +25,59 @@ Listener::Listener(const std::string url):
     logInfo << "Listener bound to " << url;
 }
 
-Listener::~Listener() {}
+Server::~Server() {}
 
-void Listener::listen() {
+void Server::listen() {
     while (1) {
         zmq::message_t request;
         zmq::recv_result_t res1 = this->_socket.recv(request, zmq::recv_flags::none);
-        logDebug << "Received Hello: " << request.str();
-        Sleep(1000); //  Do some 'work'
+        //logDebug << "Received Hello: " << request.str();
 
         zmq::message_t reply(5);
         memcpy(reply.data(), "World", 5);
         zmq::send_result_t res2 = this->_socket.send(reply, zmq::send_flags::none);
-        logInfo << "replied World";
+        //logInfo << "replied World";
     }
 }
 
 
-// Requester
-Requester::Requester(const std::string url):
+// Client
+Client::Client(const std::string url):
     _context(1), // n io threads (1 is sane default)
     _socket(this->_context, ZMQ_REQ)
 {
     try {
         this->_socket.connect(url);
     } catch (zmq::error_t::exception e) {
-        logError << "Failed to connect Requester socket to url " << url << " with exception " << e.what();
+        logError << "Failed to connect Client socket to url " << url << " with exception " << e.what();
         this->_socket.close();
     }
-    logInfo << "Requester connected to " << url;
+    logInfo << "Client connected to " << url;
 }
 
-Requester::~Requester() {}
+Client::~Client() {}
 
-void Requester::send(std::string &s) {
+void Client::send(std::string &s) {
     zmq::message_t msg(s.length());
     memcpy(msg.data(), s.c_str(), s.length());
     zmq::send_result_t response = this->_socket.send(msg, zmq::send_flags::none);
 }
 
-void Requester::send(const char *s) {
+void Client::send(const char *s) {
     zmq::message_t msg(strlen(s));
     //memcpy(msg.data(), s, strlen(s));
     memcpy(msg.data(), "hello", 5);
-    logInfo << "attemping to send message: " << msg.to_string();
+    //logInfo << "attemping to send message: " << msg.to_string();
     try {
         zmq::send_result_t response = this->_socket.send(msg, zmq::send_flags::none);
     } catch (zmq::error_t::exception e) {
         logError << "failed to send: " << e.what();
     }
-    logInfo << "Sent hello.";
+
+    // Now we need to get the reply:
+    zmq::message_t request;
+    zmq::recv_result_t res1 = this->_socket.recv(request, zmq::recv_flags::none);
+    //logInfo << "Received: " << request.str();
 }
 
 

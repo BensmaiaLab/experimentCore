@@ -9,26 +9,26 @@
 // #include "IMessenger.h"
 
 
-class Listener {
+class Server {
 private:
     zmq::context_t _context;
     zmq::socket_t  _socket;
 
 public:
-    Listener(const std::string url);
-    ~Listener();
+    Server(const std::string url);
+    ~Server();
 
     void listen();
 };
 
-class Requester {
+class Client {
     private:
     zmq::context_t _context;
     zmq::socket_t  _socket;
 
 public:
-    Requester(const std::string url);
-    ~Requester();
+    Client(const std::string url);
+    ~Client();
 
     void send(std::string &s);
     void send(const char *s);

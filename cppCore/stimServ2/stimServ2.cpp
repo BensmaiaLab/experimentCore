@@ -29,13 +29,14 @@ public:
 
 void thread1() {
     logInfo << "running";
-    Listener listener("tcp://*:25555"); //bind
+    Server listener("tcp://*:25555"); //bind
     listener.listen();
+    logInfo << "server shutdown.";
 }
 
 void thread2() {
     logInfo << "running";
-    Requester requester("tcp://localhost:25555"); //connect
+    Client requester("tcp://localhost:25555"); //connect
     for (auto i = 0; i < 10; i++) {
         logInfo << "hello " << i;
         requester.send("hello");
@@ -50,5 +51,8 @@ int main() {
     // Wait a second before starting second thread:
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     std::thread t2(thread2);
-    
+    t1.join();
+    t2.join();
+    logInfo << "Shutdown complete.";
+    return 0;
 }
