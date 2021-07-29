@@ -18,7 +18,7 @@ public:
     Server(const std::string url);
     ~Server();
 
-    void listen();
+    void listen(std::function<std::string(std::string)> f);
 };
 
 class Client {

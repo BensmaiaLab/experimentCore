@@ -27,17 +27,30 @@ Server::Server(const std::string url):
 
 Server::~Server() {}
 
-void Server::listen() {
+/*
+    Takes a callback function to a message processor.
+    Callback can return a "stop" string which will
+    tell the listen loop to shutdown.
+*/
+void Server::listen(std::function<std::string(std::string)> f) {
     while (1) {
         zmq::message_t request;
         zmq::recv_result_t res1 = this->_socket.recv(request, zmq::recv_flags::none);
-        //logDebug << "Received Hello: " << request.str();
-
+        
+        // Call message processor:
+        std::string resp = f(request.to_string());
+        logInfo << "server response is: " << resp;
         zmq::message_t reply(5);
         memcpy(reply.data(), "World", 5);
         zmq::send_result_t res2 = this->_socket.send(reply, zmq::send_flags::none);
-        //logInfo << "replied World";
+        // Have to reply first before we shutdown...
+        if (resp == std::string("stop")) {
+            logInfo << "Server got stop.";
+            break;
+        }
     }
+    logInfo << "server.listen() shutting down.";
+    return;
 }
 
 
@@ -65,8 +78,8 @@ void Client::send(std::string &s) {
 
 void Client::send(const char *s) {
     zmq::message_t msg(strlen(s));
-    //memcpy(msg.data(), s, strlen(s));
-    memcpy(msg.data(), "hello", 5);
+    memcpy(msg.data(), s, strlen(s));
+    //memcpy(msg.data(), "hello", 5);
     //logInfo << "attemping to send message: " << msg.to_string();
     try {
         zmq::send_result_t response = this->_socket.send(msg, zmq::send_flags::none);

@@ -27,32 +27,54 @@ public:
 };
 
 
-void thread1() {
-    logInfo << "running";
-    Server listener("tcp://*:25555"); //bind
-    listener.listen();
-    logInfo << "server shutdown.";
-}
-
-void thread2() {
-    logInfo << "running";
-    Client requester("tcp://localhost:25555"); //connect
-    for (auto i = 0; i < 10; i++) {
-        logInfo << "hello " << i;
-        requester.send("hello");
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+std::string processMessages(const std::string message) {
+    if (message == "hello") {
+        logInfo << "Server got hello";
+        return std::string("World");
+    }
+    else if (message == "stop") {
+        logInfo << "Server stopping.";
+        return std::string("stop");
     }
 }
 
-int main() {
-    logInfo << "Starting service!";
+void serverThread(std::function<std::string(std::string)> f) {
+    logInfo << "running";
+    Server server("tcp://*:25555"); //bind
+    server.listen(f);
+    logInfo << "server shutdown.";
+    return;
+}
 
-    std::thread t1(thread1);
-    // Wait a second before starting second thread:
+void clientThread() {
+    logInfo << "running";
+    Client client("tcp://localhost:25555"); //connect
+    for (auto i = 0; i < 10; i++) {
+        client.send("hello");
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    }
+    client.send("stop");
+    logInfo << "client sent stop.";
+    return;
+}
+
+int main() {
+    bool debugMode = false;
+    // Program options here
+    init_logging(debugMode, (std::string)"StimService2.log"); // bool is "debug mode" TODO: turn into a command line arg
+    logInfo << "Starting Stimulator Service.";
+    logInfo << "Last built at " << __DATE__ << " " << __TIME__;
+    
+    // Passing the message processor
+    std::function<std::string(std::string)> f = processMessages;
+    std::thread t1(serverThread, f);
+
+    // Wait a second before starting client thread to make sure server bound first:
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-    std::thread t2(thread2);
-    t1.join();
+    std::thread t2(clientThread);
     t2.join();
+    logInfo << "Client thread stopped.";
+    t1.join();
     logInfo << "Shutdown complete.";
     return 0;
 }
