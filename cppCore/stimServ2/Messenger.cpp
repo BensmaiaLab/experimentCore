@@ -3,19 +3,21 @@
 #include "Messenger.h"
 
 /*
- Based on: https://blog.pramp.com/inter-thread-communication-in-c-futures-promises-vs-sockets-aeebfffd2107
+ Based on zmq. 
+
 */
 
+void printZMQver(){
+    auto [vMa, vMi, vP] = zmq::version();
+    logInfo << "Using ZeroMQ version " << vMa << "." << vMi << "." << vP << ".";
+}
 
-// Listener
+/* Basic listen server implementation with zmq. */
 Server::Server(const std::string url):
     _context(1), // n io threads (1 is sane default)
     _socket(this->_context, ZMQ_REP)
 {
-    // Get version
-    auto [vMa, vMi, vP] = zmq::version();
-    logInfo << "Using ZeroMQ version " << vMa << "." << vMi << "." << vP << ".";
-
+    printZMQver();
     try {
         this->_socket.bind(url);
     } catch (zmq::error_t::exception) {
@@ -38,18 +40,15 @@ void Server::listen(std::function<std::string(std::string)> f) {
         zmq::recv_result_t res1 = this->_socket.recv(request, zmq::recv_flags::none);
         
         // Call message processor:
-        std::string resp = f(request.to_string());
-        logInfo << "server response is: " << resp;
+        std::string req = f(request.to_string());
+        //logInfo << "server response is: " << resp;
         zmq::message_t reply(5);
         memcpy(reply.data(), "World", 5);
         zmq::send_result_t res2 = this->_socket.send(reply, zmq::send_flags::none);
         // Have to reply first before we shutdown...
-        if (resp == std::string("stop")) {
-            logInfo << "Server got stop.";
-            break;
-        }
+        if (req == std::string("stop")) break;
     }
-    logInfo << "server.listen() shutting down.";
+    logInfo << "server shutting down.";
     return;
 }
 
@@ -59,6 +58,8 @@ Client::Client(const std::string url):
     _context(1), // n io threads (1 is sane default)
     _socket(this->_context, ZMQ_REQ)
 {
+    // Wait 1 second for replies before failing so we don't block indef on receive after send
+    this->_socket.set(zmq::sockopt::rcvtimeo, 1000);
     try {
         this->_socket.connect(url);
     } catch (zmq::error_t::exception e) {
@@ -70,27 +71,15 @@ Client::Client(const std::string url):
 
 Client::~Client() {}
 
-void Client::send(std::string &s) {
+std::string Client::send(const std::string s) {
     zmq::message_t msg(s.length());
-    memcpy(msg.data(), s.c_str(), s.length());
-    zmq::send_result_t response = this->_socket.send(msg, zmq::send_flags::none);
-}
-
-void Client::send(const char *s) {
-    zmq::message_t msg(strlen(s));
-    memcpy(msg.data(), s, strlen(s));
-    //memcpy(msg.data(), "hello", 5);
-    //logInfo << "attemping to send message: " << msg.to_string();
+    memcpy(msg.data(), s.data(), s.length());
     try {
         zmq::send_result_t response = this->_socket.send(msg, zmq::send_flags::none);
     } catch (zmq::error_t::exception e) {
         logError << "failed to send: " << e.what();
     }
-
-    // Now we need to get the reply:
-    zmq::message_t request;
-    zmq::recv_result_t res1 = this->_socket.recv(request, zmq::recv_flags::none);
-    //logInfo << "Received: " << request.str();
+    zmq::message_t reply;
+    zmq::recv_result_t res1 = this->_socket.recv(reply, zmq::recv_flags::none);
+    return reply.str();
 }
-
-

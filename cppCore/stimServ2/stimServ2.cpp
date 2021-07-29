@@ -27,15 +27,9 @@ public:
 };
 
 
-std::string processMessages(const std::string message) {
-    if (message == "hello") {
-        logInfo << "Server got hello";
-        return std::string("World");
-    }
-    else if (message == "stop") {
-        logInfo << "Server stopping.";
-        return std::string("stop");
-    }
+std::string processMessages(const std::string msg) {
+    if      (msg == "hello") return "World";
+    else if (msg == "stop")  return "stop";
 }
 
 void serverThread(std::function<std::string(std::string)> f) {

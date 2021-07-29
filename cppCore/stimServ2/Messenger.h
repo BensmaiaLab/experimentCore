@@ -30,6 +30,5 @@ public:
     Client(const std::string url);
     ~Client();
 
-    void send(std::string &s);
-    void send(const char *s);
+    std::string send(const std::string s);
 };
