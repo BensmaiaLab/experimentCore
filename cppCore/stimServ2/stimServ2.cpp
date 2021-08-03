@@ -4,6 +4,7 @@
 #include <thread>
 #include <chrono>
 #include "Messenger.h"
+#include "Stimulator.h"
 
 enum class TrialState {
     UNKNOWN,
