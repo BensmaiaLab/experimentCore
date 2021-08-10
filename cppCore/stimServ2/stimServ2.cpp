@@ -14,13 +14,7 @@ enum class TrialState {
     Error
 };
 
-enum class StimulatorState {
-    UNKNOWN,
-    Initialized,
-    Running,
-    Done,
-    Error
-};
+
 
 class Trial {
 public:

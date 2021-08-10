@@ -94,14 +94,18 @@
     <ClCompile Include="Configuration.cpp" />
     <ClCompile Include="Log.cpp" />
     <ClCompile Include="Messenger.cpp" />
+    <ClCompile Include="Nidaq.cpp" />
+    <ClCompile Include="Stimulator.cpp" />
     <ClCompile Include="stimServ2.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Configuration.h" />
+    <ClInclude Include="Nidaq.h" />
     <ClInclude Include="IMessenger.h" />
     <ClInclude Include="Log.h" />
     <ClInclude Include="Messenger.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="Stimulator.h" />
     <ClInclude Include="Tools.h" />
   </ItemGroup>
   <ItemGroup>
